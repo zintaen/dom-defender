@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DOM Defender — 404: Survival Found</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  :root {
+    --accent: #7c3aed;
+    --accent-2: #06b6d4;
+    --danger: #ef4444;
+    --ok: #22c55e;
+  }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0b0f1a;
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+
+  /* Default cursors for tools */
+  body.tool-tape   { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><rect x='6' y='12' width='20' height='10' rx='2' fill='%23fde047' stroke='%23000' stroke-width='1.5'/><line x1='10' y1='14' x2='10' y2='20' stroke='%23000' stroke-width='1'/><line x1='16' y1='14' x2='16' y2='20' stroke='%23000' stroke-width='1'/><line x1='22' y1='14' x2='22' y2='20' stroke='%23000' stroke-width='1'/></svg>") 16 16, grab; }
+  body.tool-debugger { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><path d='M8 4 L20 16 L14 22 L6 14 Z' fill='%23dc2626' stroke='%23000' stroke-width='1.5'/><rect x='18' y='14' width='10' height='4' fill='%23475569' stroke='%23000' transform='rotate(45 23 16)'/></svg>") 16 16, crosshair; }
+  body.tool-vacuum { cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'><circle cx='16' cy='20' r='8' fill='%2306b6d4' stroke='%23000' stroke-width='1.5'/><path d='M12 12 L16 4 L20 12 Z' fill='%2306b6d4' stroke='%23000' stroke-width='1.5'/><circle cx='16' cy='20' r='3' fill='%23000'/></svg>") 16 16, cell; }
+
+  /* === Glitch effects === */
+  @keyframes shake {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-2px, 1px); }
+    20% { transform: translate(2px, -1px); }
+    30% { transform: translate(-1px, 2px); }
+    40% { transform: translate(3px, 0); }
+    50% { transform: translate(-3px, -1px); }
+    60% { transform: translate(1px, 2px); }
+    70% { transform: translate(-2px, -2px); }
+    80% { transform: translate(2px, 1px); }
+    90% { transform: translate(-1px, 0); }
+  }
+  @keyframes drift-slow {
+    0% { transform: translate(var(--dx,0), var(--dy,0)) rotate(var(--r,0deg)); }
+    100% { transform: translate(calc(var(--dx,0) * 1.2), calc(var(--dy,0) * 1.2)) rotate(calc(var(--r,0deg) * 1.05)); }
+  }
+  @keyframes chromatic {
+    0%, 100% { text-shadow: 0 0 0 transparent; }
+    50% {
+      text-shadow: -2px 0 #ef4444, 2px 0 #06b6d4;
+      filter: blur(0.3px);
+    }
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+    52% { opacity: 1; }
+    54% { opacity: 0.2; }
+    56% { opacity: 1; }
+  }
+  @keyframes glitch-slide {
+    0% { clip-path: inset(0 0 0 0); }
+    20% { clip-path: inset(10% 0 60% 0); }
+    40% { clip-path: inset(50% 0 20% 0); }
+    60% { clip-path: inset(30% 0 50% 0); }
+    80% { clip-path: inset(70% 0 5% 0); }
+    100% { clip-path: inset(0 0 0 0); }
+  }
+  @keyframes pulse-danger {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+    50% { box-shadow: 0 0 20px 8px rgba(239, 68, 68, 0.3); }
+  }
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+  @keyframes pop-in {
+    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    60% { transform: scale(1.1) rotate(4deg); opacity: 1; }
+    100% { transform: scale(1) rotate(var(--rot,0deg)); opacity: 1; }
+  }
+  @keyframes float-up {
+    0% { transform: translateY(0); opacity: 1; }
+    100% { transform: translateY(-60px); opacity: 0; }
+  }
+  @keyframes meter-pulse {
+    0%, 100% { filter: brightness(1); }
+    50% { filter: brightness(1.4); }
+  }
+  @keyframes comic-swap {
+    0%, 100% { font-family: inherit; letter-spacing: normal; }
+    50% { font-family: 'Comic Sans MS', 'Chalkduster', cursive; letter-spacing: 1px; }
+  }
+  @keyframes invert-flash {
+    0%, 100% { filter: invert(0) hue-rotate(0deg); }
+    50% { filter: invert(1) hue-rotate(180deg); }
+  }
+  @keyframes confetti {
+    0% { transform: translate(0,0) scale(1) rotate(0); opacity: 1; }
+    100% { transform: translate(var(--fx,0), var(--fy,80px)) scale(0.2) rotate(360deg); opacity: 0; }
+  }
+
+  /* Bug style classes */
+  .bug-drift {
+    animation: drift-slow 2.5s ease-out forwards, shake 0.4s infinite;
+    outline: 2px dashed #fde047;
+    outline-offset: 4px;
+    box-shadow: 0 0 0 2px rgba(253, 224, 71, 0.4), 0 0 20px rgba(253, 224, 71, 0.5);
+    z-index: 40;
+    position: relative;
+  }
+  .bug-comic {
+    animation: comic-swap 0.5s infinite, shake 0.5s infinite;
+    color: #f472b6 !important;
+    font-family: 'Comic Sans MS', 'Chalkduster', cursive !important;
+    outline: 2px dashed #f472b6;
+    outline-offset: 3px;
+    z-index: 40;
+    position: relative;
+  }
+  .bug-invert {
+    animation: invert-flash 1.4s infinite;
+    outline: 2px dashed #a78bfa;
+    outline-offset: 3px;
+    z-index: 40;
+    position: relative;
+  }
+  .bug-chromatic {
+    animation: chromatic 0.15s infinite, flicker 1.5s infinite;
+    outline: 2px dashed #06b6d4;
+    outline-offset: 3px;
+    z-index: 40;
+    position: relative;
+  }
+
+  .fixed-flash {
+    animation: fixed-flash 0.5s ease-out;
+  }
+  @keyframes fixed-flash {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.9); }
+    100% { box-shadow: 0 0 30px 12px rgba(34, 197, 94, 0); }
+  }
+
+  .scanline {
+    position: fixed;
+    left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.6), transparent);
+    pointer-events: none;
+    z-index: 45;
+    animation: scanline 4s linear infinite;
+    mix-blend-mode: screen;
+  }
+
+  .crt::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.08) 0px,
+      rgba(0,0,0,0.08) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    z-index: 40;
+    mix-blend-mode: multiply;
+  }
+
+  .memory-leak {
+    position: absolute;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    color: #22d3ee;
+    text-shadow: 0 0 8px #22d3ee, 0 0 2px #fff;
+    pointer-events: auto;
+    user-select: none;
+    white-space: pre;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 4px;
+    border: 1px solid #22d3ee;
+    z-index: 48;
+    animation: pop-in 0.3s cubic-bezier(.2,.9,.3,1.4), flicker 1s infinite;
+  }
+
+  .console-popup {
+    position: absolute;
+    min-width: 340px;
+    max-width: 420px;
+    background: #0f172a;
+    border: 2px solid #ef4444;
+    border-radius: 6px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 0 1px rgba(239,68,68,0.3);
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    z-index: 50;
+    animation: pop-in 0.35s cubic-bezier(.2,.9,.3,1.4), shake 0.3s infinite;
+    --rot: 0deg;
+  }
+  .console-popup .title {
+    background: #ef4444;
+    color: #0f172a;
+    padding: 4px 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  .console-popup .body {
+    padding: 10px;
+    color: #fecaca;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  .console-popup .hp-bar {
+    height: 4px;
+    background: #450a0a;
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 6px;
+  }
+  .console-popup .hp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #f97316);
+  }
+
+  .toolbar-btn {
+    transition: all 0.15s ease-out;
+  }
+  .toolbar-btn.active {
+    background: linear-gradient(135deg, #7c3aed, #06b6d4);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+  }
+  .toolbar-btn:hover:not(.active) {
+    background: rgba(124, 58, 237, 0.2);
+  }
+
+  .crash-meter-bg {
+    background: #1e293b;
+    position: relative;
+    overflow: hidden;
+  }
+  .crash-meter-fill {
+    transition: width 0.3s ease-out;
+    background: linear-gradient(90deg, #22c55e 0%, #eab308 50%, #ef4444 100%);
+  }
+  .crash-meter-fill.danger {
+    animation: meter-pulse 0.5s infinite;
+  }
+
+  .floating-score {
+    position: absolute;
+    font-weight: 800;
+    font-size: 22px;
+    pointer-events: none;
+    animation: float-up 0.8s ease-out forwards;
+    z-index: 60;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+
+  .confetti-piece {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+    animation: confetti 0.9s ease-out forwards;
+    z-index: 55;
+  }
+
+  .overlay-modal {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(11, 15, 26, 0.85);
+    backdrop-filter: blur(8px);
+    z-index: 100;
+  }
+
+  .dashed-target {
+    border: 2px dashed rgba(253, 224, 71, 0.5) !important;
+    background: rgba(253, 224, 71, 0.04) !important;
+  }
+
+  /* Landing page content styling (the "real" site under attack) */
+  .hero-gradient {
+    background:
+      radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.3), transparent 40%),
+      radial-gradient(circle at 80% 60%, rgba(6, 182, 212, 0.25), transparent 40%),
+      linear-gradient(180deg, #0b0f1a 0%, #111827 100%);
+  }
+  .glass {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Prevent text selection during gameplay */
+  .gaming * { user-select: none; }
+
+  /* Small neon labels */
+  .neon-label {
+    font-family: 'Courier New', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-size: 10px;
+    opacity: 0.8;
+  }
+
+  /* Marquee for the "breaking news" banner at crash */
+  @keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  .marquee {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee 12s linear infinite;
+  }
+
+  /* Dragging feedback */
+  .dragging {
+    opacity: 0.85;
+    cursor: grabbing !important;
+    z-index: 100 !important;
+  }
+
+  /* Combo flash */
+  .combo-flash {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 56px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fde047, #f472b6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    pointer-events: none;
+    z-index: 70;
+    text-shadow: 0 4px 20px rgba(244, 114, 182, 0.5);
+    animation: combo-pop 1s ease-out forwards;
+  }
+  @keyframes combo-pop {
+    0% { transform: translateX(-50%) scale(0.3); opacity: 0; }
+    40% { transform: translateX(-50%) scale(1.3); opacity: 1; }
+    100% { transform: translateX(-50%) scale(1.6); opacity: 0; }
+  }
+
+  /* Target placeholder */
+  .target-placeholder {
+    outline: 2px dashed rgba(34, 197, 94, 0.6);
+    outline-offset: 4px;
+    background: rgba(34, 197, 94, 0.05);
+    animation: pulse-danger 1.2s infinite;
+  }
+</style>
+</head>
+<body class="crt">
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback, useMemo } = React;
+
+// ============================================================
+//  Audio - tiny Web Audio API helpers (no external deps)
+// ============================================================
+let audioCtx = null;
+function getAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+    catch (e) { return null; }
+  }
+  return audioCtx;
+}
+function beep({ freq = 440, dur = 0.08, type = 'square', vol = 0.08, slide = 0 } = {}) {
+  const ctx = getAudio();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, ctx.currentTime);
+  if (slide) osc.frequency.exponentialRampToValueAtTime(Math.max(20, freq + slide), ctx.currentTime + dur);
+  gain.gain.setValueAtTime(vol, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.start(); osc.stop(ctx.currentTime + dur);
+}
+function sfx(name) {
+  switch (name) {
+    case 'fix':     beep({ freq: 660, dur: 0.1, type: 'square', slide: 440, vol: 0.1 });
+                    setTimeout(() => beep({ freq: 880, dur: 0.08, type: 'square', vol: 0.08 }), 60); break;
+    case 'hit':     beep({ freq: 200, dur: 0.05, type: 'square', slide: -80, vol: 0.07 }); break;
+    case 'spawn':   beep({ freq: 120, dur: 0.12, type: 'sawtooth', slide: 60, vol: 0.05 }); break;
+    case 'tool':    beep({ freq: 500, dur: 0.04, type: 'triangle', vol: 0.06 }); break;
+    case 'crash':   beep({ freq: 300, dur: 0.3, type: 'sawtooth', slide: -280, vol: 0.15 });
+                    setTimeout(() => beep({ freq: 80, dur: 0.8, type: 'sawtooth', slide: -60, vol: 0.2 }), 150); break;
+    case 'combo':   beep({ freq: 800, dur: 0.08, type: 'square', vol: 0.1 });
+                    setTimeout(() => beep({ freq: 1000, dur: 0.08, type: 'square', vol: 0.1 }), 80);
+                    setTimeout(() => beep({ freq: 1200, dur: 0.12, type: 'square', vol: 0.1 }), 160); break;
+    case 'wave':    beep({ freq: 300, dur: 0.1, type: 'triangle', vol: 0.08 });
+                    setTimeout(() => beep({ freq: 500, dur: 0.15, type: 'triangle', vol: 0.08 }), 100); break;
+    case 'vacuum':  beep({ freq: 180, dur: 0.05, type: 'sawtooth', vol: 0.04 }); break;
+  }
+}
+
+// ============================================================
+//  Fake landing page content (the "real" site under attack)
+// ============================================================
+const LandingPage = React.forwardRef((props, ref) => {
+  return (
+    <div ref={ref} className="hero-gradient min-h-screen">
+      {/* NAV */}
+      <header className="flex items-center justify-between px-8 py-5 max-w-7xl mx-auto" data-bug-candidate="true">
+        <div className="flex items-center gap-2" data-bug-candidate="true">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center font-black text-slate-900">N</div>
+          <span className="font-bold text-lg tracking-tight" data-bug-candidate="true">Nebula.io</span>
+        </div>
+        <nav className="hidden md:flex items-center gap-8 text-sm text-slate-300">
+          <a href="#" data-bug-candidate="true">Product</a>
+          <a href="#" data-bug-candidate="true">Pricing</a>
+          <a href="#" data-bug-candidate="true">Customers</a>
+          <a href="#" data-bug-candidate="true">Docs</a>
+        </nav>
+        <div className="flex items-center gap-3">
+          <button className="text-sm text-slate-300" data-bug-candidate="true">Sign in</button>
+          <button className="text-sm bg-white text-slate-900 px-4 py-2 rounded-lg font-semibold" data-bug-candidate="true">Start free</button>
+        </div>
+      </header>
+
+      {/* HERO */}
+      <section className="px-8 py-16 max-w-5xl mx-auto text-center">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full glass text-xs text-cyan-300 mb-6" data-bug-candidate="true">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+          Now with AI-powered DOM repair
+        </div>
+        <h1 className="text-5xl md:text-6xl font-black tracking-tight leading-tight mb-6" data-bug-candidate="true" data-bug-priority="high">
+          The internet runs on <span className="bg-gradient-to-r from-violet-400 to-cyan-400 bg-clip-text text-transparent">beautiful</span> websites.
+        </h1>
+        <p className="text-lg text-slate-300 max-w-2xl mx-auto mb-8" data-bug-candidate="true">
+          Nebula helps teams build, ship, and defend pixel-perfect web experiences. Trusted by thousands of engineers worldwide.
+        </p>
+        <div className="flex items-center justify-center gap-3">
+          <button className="bg-gradient-to-r from-violet-500 to-cyan-400 text-slate-900 px-6 py-3 rounded-xl font-bold shadow-lg" data-bug-candidate="true" data-bug-priority="high">
+            Deploy a site →
+          </button>
+          <button className="glass px-6 py-3 rounded-xl font-semibold text-slate-200" data-bug-candidate="true">
+            Watch demo
+          </button>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section className="px-8 py-12 max-w-6xl mx-auto grid md:grid-cols-3 gap-6">
+        {[
+          { t: 'Lightning fast',    d: 'Sub-100ms builds on a global edge network that never sleeps.' },
+          { t: 'Type-safe by default', d: 'Full TypeScript support with design tokens and runtime validation.' },
+          { t: 'Designed for teams', d: 'Review, preview, and ship collaborative work without merge conflicts.' },
+        ].map((f, i) => (
+          <div key={i} className="glass rounded-2xl p-6" data-bug-candidate="true">
+            <div className="w-10 h-10 rounded-lg bg-violet-500/20 border border-violet-500/40 flex items-center justify-center mb-4 text-violet-300 font-bold">
+              {i === 0 ? '⚡' : i === 1 ? '🛡' : '✨'}
+            </div>
+            <h3 className="font-bold text-lg mb-2" data-bug-candidate="true">{f.t}</h3>
+            <p className="text-sm text-slate-400" data-bug-candidate="true">{f.d}</p>
+          </div>
+        ))}
+      </section>
+
+      {/* TESTIMONIAL */}
+      <section className="px-8 py-16 max-w-4xl mx-auto">
+        <div className="glass rounded-2xl p-8 text-center" data-bug-candidate="true">
+          <p className="text-xl italic text-slate-200 mb-4" data-bug-candidate="true">
+            "We shipped our entire design system in a weekend. Nebula is the future of the web."
+          </p>
+          <p className="text-sm text-slate-400" data-bug-candidate="true">— Morgan Chen, CTO at StackForge</p>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="px-8 py-20 text-center">
+        <h2 className="text-3xl font-bold mb-4" data-bug-candidate="true">Ready to build something great?</h2>
+        <button className="bg-white text-slate-900 px-8 py-3 rounded-xl font-bold" data-bug-candidate="true">Get started free</button>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="px-8 py-10 border-t border-white/10 max-w-7xl mx-auto flex justify-between text-sm text-slate-500">
+        <div data-bug-candidate="true">© 2026 Nebula Labs, Inc.</div>
+        <div className="flex gap-6">
+          <a href="#" data-bug-candidate="true">Privacy</a>
+          <a href="#" data-bug-candidate="true">Terms</a>
+          <a href="#" data-bug-candidate="true">Status</a>
+        </div>
+      </footer>
+    </div>
+  );
+});
+
+// ============================================================
+//  Game constants
+// ============================================================
+const TOOLS = {
+  TAPE:     { id: 'tape',     label: 'Duct Tape',        key: '1', color: '#fde047', icon: '🩹', hint: 'Drag drifting elements back into place' },
+  DEBUGGER: { id: 'debugger', label: 'Debugger',         key: '2', color: '#ef4444', icon: '🔨', hint: 'Click console errors to smash them' },
+  VACUUM:   { id: 'vacuum',   label: 'Garbage Collector', key: '3', color: '#06b6d4', icon: '🌀', hint: 'Click-sweep to suck up memory leaks' },
+};
+
+const BUG_TYPES = {
+  DRIFT:     { tool: 'tape',     damagePerSec: 1.2 },  // CSS element drifting
+  COMIC:     { tool: 'tape',     damagePerSec: 1.5 },  // text changed to comic sans
+  INVERT:    { tool: 'tape',     damagePerSec: 1.3 },  // color inverted
+  CHROMATIC: { tool: 'tape',     damagePerSec: 1.4 },  // chromatic aberration
+  CONSOLE:   { tool: 'debugger', damagePerSec: 1.8 },  // console popup
+  LEAK:      { tool: 'vacuum',   damagePerSec: 1.0 },  // memory leak
+};
+
+const CSS_BUG_VARIANTS = ['DRIFT', 'COMIC', 'INVERT', 'CHROMATIC'];
+
+const GARBAGE_CHARS = ['0xFF', 'undefined', 'NaN', '[object Object]', '0x00', 'null', '#&@%!', '<<ERR>>', '404', '{...}', '???', '██▓▒░', 'FREE()', 'malloc', '0xDEADBEEF'];
+
+const ERROR_MESSAGES = [
+  "Uncaught TypeError: Cannot read property 'length' of undefined",
+  "ReferenceError: useState is not defined",
+  "SyntaxError: Unexpected token '<' in JSON at position 0",
+  "Error: Maximum call stack size exceeded",
+  "TypeError: Failed to fetch",
+  "Warning: Each child in a list should have a unique 'key' prop.",
+  "DOMException: Permission denied to access property 'document'",
+  "CORS policy: No 'Access-Control-Allow-Origin' header present",
+  "RangeError: Invalid array length",
+  "Hydration failed because the initial UI does not match what was rendered on the server.",
+];
+
+// ============================================================
+//  Main App
+// ============================================================
+function App() {
+  const [screen, setScreen] = useState('start'); // start | playing | over
+  const [score, setScore] = useState(0);
+  const [highScore, setHighScore] = useState(0);
+  const [bestTime, setBestTime] = useState(0);
+  const [crash, setCrash] = useState(0);          // 0-100, at 100 game ends
+  const [elapsed, setElapsed] = useState(0);       // seconds
+  const [wave, setWave] = useState(1);
+  const [tool, setTool] = useState('tape');
+  const [bugs, setBugs] = useState([]);            // active bugs
+  const [flashes, setFlashes] = useState([]);      // floating score popups
+  const [confetti, setConfetti] = useState([]);
+  const [comboText, setComboText] = useState('');
+  const comboRef = useRef({ count: 0, lastFix: 0 });
+
+  const pageRef = useRef(null);
+  const bugIdRef = useRef(1);
+  const gameTickRef = useRef(null);
+  const spawnTickRef = useRef(null);
+  const waveRef = useRef(1);
+  const startTimeRef = useRef(0);
+  const draggingRef = useRef(null);
+
+  // Apply cursor class to body based on current tool
+  useEffect(() => {
+    document.body.classList.remove('tool-tape', 'tool-debugger', 'tool-vacuum');
+    if (screen === 'playing') {
+      document.body.classList.add(`tool-${tool}`);
+      document.body.classList.add('gaming');
+    } else {
+      document.body.classList.remove('gaming');
+    }
+  }, [tool, screen]);
+
+  // Keyboard controls
+  useEffect(() => {
+    const handler = (e) => {
+      if (screen !== 'playing') return;
+      if (e.key === '1') { setTool('tape');     sfx('tool'); }
+      if (e.key === '2') { setTool('debugger'); sfx('tool'); }
+      if (e.key === '3') { setTool('vacuum');   sfx('tool'); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [screen]);
+
+  // =====================================================
+  //  Bug spawner
+  // =====================================================
+  const pickRandomTarget = useCallback(() => {
+    const page = pageRef.current;
+    if (!page) return null;
+    const candidates = page.querySelectorAll('[data-bug-candidate="true"]');
+    const healthy = Array.from(candidates).filter((el) => !el.dataset.bugActive);
+    if (healthy.length === 0) return null;
+    return healthy[Math.floor(Math.random() * healthy.length)];
+  }, []);
+
+  const spawnBug = useCallback(() => {
+    const w = waveRef.current;
+    // Decide type — higher waves increase variety
+    let type;
+    const r = Math.random();
+    if (r < 0.45) {
+      type = CSS_BUG_VARIANTS[Math.floor(Math.random() * CSS_BUG_VARIANTS.length)];
+    } else if (r < 0.75) {
+      type = 'CONSOLE';
+    } else {
+      type = 'LEAK';
+    }
+
+    const id = bugIdRef.current++;
+
+    if (type === 'CONSOLE') {
+      const x = 40 + Math.random() * (window.innerWidth - 460);
+      const y = 80 + Math.random() * (window.innerHeight - 260);
+      const hp = w >= 3 ? 2 : 1;  // higher waves make popups tougher
+      setBugs((b) => [...b, {
+        id, type, x, y, hp, maxHp: hp,
+        message: ERROR_MESSAGES[Math.floor(Math.random() * ERROR_MESSAGES.length)],
+        rot: (Math.random() - 0.5) * 8,
+      }]);
+    } else if (type === 'LEAK') {
+      const x = 20 + Math.random() * (window.innerWidth - 160);
+      const y = 100 + Math.random() * (window.innerHeight - 200);
+      const text = GARBAGE_CHARS[Math.floor(Math.random() * GARBAGE_CHARS.length)];
+      setBugs((b) => [...b, { id, type, x, y, text, hp: 1 }]);
+    } else {
+      // CSS drift-style bug attached to a DOM element
+      const target = pickRandomTarget();
+      if (!target) return;
+      target.dataset.bugActive = String(id);
+      const rect = target.getBoundingClientRect();
+      const originalTransform = target.style.transform || '';
+      const dx = (Math.random() - 0.5) * 200;
+      const dy = (Math.random() - 0.5) * 120;
+      const rot = (Math.random() - 0.5) * 20;
+      if (type === 'DRIFT') {
+        target.style.setProperty('--dx', `${dx}px`);
+        target.style.setProperty('--dy', `${dy}px`);
+        target.style.setProperty('--r', `${rot}deg`);
+        target.classList.add('bug-drift');
+      } else if (type === 'COMIC') {
+        target.classList.add('bug-comic');
+      } else if (type === 'INVERT') {
+        target.classList.add('bug-invert');
+      } else if (type === 'CHROMATIC') {
+        target.classList.add('bug-chromatic');
+      }
+      setBugs((b) => [...b, {
+        id, type,
+        anchor: { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 },
+        originalTransform,
+      }]);
+    }
+    sfx('spawn');
+  }, [pickRandomTarget]);
+
+  // =====================================================
+  //  Bug removal + scoring
+  // =====================================================
+  const flashScore = (x, y, amount, color = '#22c55e') => {
+    const id = Math.random();
+    setFlashes((f) => [...f, { id, x, y, amount, color }]);
+    setTimeout(() => setFlashes((f) => f.filter((fl) => fl.id !== id)), 800);
+  };
+
+  const burstConfetti = (x, y) => {
+    const pieces = [];
+    const colors = ['#fde047', '#06b6d4', '#a78bfa', '#f472b6', '#22c55e'];
+    for (let i = 0; i < 10; i++) {
+      pieces.push({
+        id: Math.random(),
+        x, y,
+        fx: (Math.random() - 0.5) * 160,
+        fy: -20 - Math.random() * 80,
+        color: colors[Math.floor(Math.random() * colors.length)],
+      });
+    }
+    setConfetti((c) => [...c, ...pieces]);
+    const ids = pieces.map(p => p.id);
+    setTimeout(() => setConfetti((c) => c.filter((p) => !ids.includes(p.id))), 900);
+  };
+
+  const removeBug = useCallback((id, bx, by) => {
+    setBugs((curr) => {
+      const bug = curr.find((b) => b.id === id);
+      if (!bug) return curr;
+
+      // Detach from DOM element if CSS bug
+      if (CSS_BUG_VARIANTS.includes(bug.type)) {
+        const page = pageRef.current;
+        if (page) {
+          const el = page.querySelector(`[data-bug-active="${id}"]`);
+          if (el) {
+            el.classList.remove('bug-drift', 'bug-comic', 'bug-invert', 'bug-chromatic');
+            el.style.removeProperty('--dx');
+            el.style.removeProperty('--dy');
+            el.style.removeProperty('--r');
+            el.style.transform = bug.originalTransform || '';
+            delete el.dataset.bugActive;
+            el.classList.add('fixed-flash');
+            setTimeout(() => el.classList.remove('fixed-flash'), 500);
+          }
+        }
+      }
+      return curr.filter((b) => b.id !== id);
+    });
+
+    // Scoring with combo
+    const now = Date.now();
+    if (now - comboRef.current.lastFix < 1500) {
+      comboRef.current.count += 1;
+    } else {
+      comboRef.current.count = 1;
+    }
+    comboRef.current.lastFix = now;
+
+    const combo = comboRef.current.count;
+    const base = 100;
+    const bonus = combo > 1 ? (combo - 1) * 25 : 0;
+    const total = base + bonus;
+    setScore((s) => s + total);
+    if (bx != null && by != null) {
+      flashScore(bx, by, `+${total}`);
+      burstConfetti(bx, by);
+    }
+    if (combo >= 3 && combo % 3 === 0) {
+      setComboText(`x${combo} COMBO!`);
+      sfx('combo');
+      setTimeout(() => setComboText(''), 900);
+    }
+    sfx('fix');
+  }, []);
+
+  // =====================================================
+  //  Click handlers by tool
+  // =====================================================
+  const tryClickBug = useCallback((e) => {
+    if (screen !== 'playing') return;
+    // Find whether click matches a bug matching current tool
+    // Console popups and leaks handled via their own onClick. This handler
+    // is mostly for drift bugs (drag) and for tapping screen with wrong tool (slight damage feedback).
+  }, [screen]);
+
+  const onConsoleClick = (bug, e) => {
+    e.stopPropagation();
+    if (tool !== 'debugger') {
+      sfx('hit');
+      return;
+    }
+    sfx('hit');
+    if (bug.hp <= 1) {
+      removeBug(bug.id, bug.x + 160, bug.y + 30);
+    } else {
+      setBugs((curr) => curr.map((b) => b.id === bug.id ? { ...b, hp: b.hp - 1 } : b));
+    }
+  };
+
+  const onLeakInteract = (bug, e) => {
+    e.stopPropagation();
+    if (tool !== 'vacuum') return;
+    sfx('vacuum');
+    removeBug(bug.id, bug.x + 20, bug.y + 10);
+  };
+
+  // Drag-drop for drift bugs: listen on the page. When mousedown on an element with data-bug-active and tool is tape, grab it.
+  useEffect(() => {
+    if (screen !== 'playing') return;
+    const onMouseDown = (e) => {
+      if (tool !== 'tape') return;
+      const el = e.target.closest('[data-bug-active]');
+      if (!el) return;
+      const id = Number(el.dataset.bugActive);
+      draggingRef.current = { id, el, startX: e.clientX, startY: e.clientY };
+      el.classList.add('dragging');
+      // Pause drift animation — we'll translate manually
+      el.style.animation = 'none';
+      // Compute offset from original position using the standard DOMMatrix
+      const computed = getComputedStyle(el).transform;
+      let mx = 0, my = 0;
+      if (computed && computed !== 'none') {
+        try {
+          const m = new DOMMatrixReadOnly(computed);
+          mx = m.m41; my = m.m42;
+        } catch (_) {}
+      }
+      draggingRef.current.offsetX = mx;
+      draggingRef.current.offsetY = my;
+      e.preventDefault();
+    };
+    const onMouseMove = (e) => {
+      const d = draggingRef.current;
+      if (!d) return;
+      const dx = e.clientX - d.startX + d.offsetX;
+      const dy = e.clientY - d.startY + d.offsetY;
+      d.el.style.transform = `translate(${dx}px, ${dy}px)`;
+      // Check how close we are to 0,0 (original placement)
+      const dist = Math.hypot(dx, dy);
+      if (dist < 40) {
+        d.el.style.transform = 'translate(0,0)';
+        // Snap & fix
+        const rect = d.el.getBoundingClientRect();
+        const bx = rect.left + rect.width / 2;
+        const by = rect.top + rect.height / 2;
+        d.el.classList.remove('dragging');
+        draggingRef.current = null;
+        removeBug(d.id, bx, by);
+      }
+    };
+    const onMouseUp = () => {
+      const d = draggingRef.current;
+      if (!d) return;
+      d.el.classList.remove('dragging');
+      // Restore the drift animation (didn't fix)
+      d.el.style.animation = '';
+      draggingRef.current = null;
+    };
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousedown', onMouseDown);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, [screen, tool, removeBug]);
+
+  // =====================================================
+  //  Game loop (ticker + damage + wave progression)
+  // =====================================================
+  useEffect(() => {
+    if (screen !== 'playing') return;
+    startTimeRef.current = Date.now();
+
+    gameTickRef.current = setInterval(() => {
+      const now = Date.now();
+      const secs = (now - startTimeRef.current) / 1000;
+      setElapsed(secs);
+
+      // Damage from active bugs
+      setBugs((curr) => {
+        if (curr.length === 0) return curr;
+        const dmg = curr.reduce((sum, b) => sum + (BUG_TYPES[b.type]?.damagePerSec || 1), 0) * 0.1;
+        setCrash((c) => Math.min(100, c + dmg));
+        return curr;
+      });
+
+      // Wave progression
+      const newWave = Math.floor(secs / 15) + 1;
+      if (newWave !== waveRef.current) {
+        waveRef.current = newWave;
+        setWave(newWave);
+        sfx('wave');
+      }
+    }, 100);
+
+    return () => clearInterval(gameTickRef.current);
+  }, [screen]);
+
+  useEffect(() => {
+    if (screen !== 'playing') return;
+
+    const scheduleNext = () => {
+      const w = waveRef.current;
+      // Spawn interval shrinks with wave. W1: ~2.8s, W2: ~2.0s, W3: 1.4s, W4: 1.0s, then asymptotes.
+      const base = Math.max(600, 3200 - w * 600);
+      const jitter = Math.random() * 400;
+      spawnTickRef.current = setTimeout(() => {
+        spawnBug();
+        // Occasionally double-spawn at higher waves
+        if (w >= 3 && Math.random() < 0.25) setTimeout(spawnBug, 200);
+        if (w >= 5 && Math.random() < 0.3) setTimeout(spawnBug, 400);
+        scheduleNext();
+      }, base + jitter);
+    };
+    scheduleNext();
+    return () => clearTimeout(spawnTickRef.current);
+  }, [screen, spawnBug]);
+
+  // Crash check
+  useEffect(() => {
+    if (screen !== 'playing') return;
+    if (crash >= 100) {
+      sfx('crash');
+      setScreen('over');
+      setHighScore((h) => Math.max(h, score));
+      setBestTime((b) => Math.max(b, elapsed));
+    }
+  }, [crash, screen, score, elapsed]);
+
+  // =====================================================
+  //  Start / restart
+  // =====================================================
+  const startGame = () => {
+    // Clean up existing bugs from DOM
+    const page = pageRef.current;
+    if (page) {
+      page.querySelectorAll('[data-bug-active]').forEach((el) => {
+        el.classList.remove('bug-drift', 'bug-comic', 'bug-invert', 'bug-chromatic');
+        el.style.transform = '';
+        el.style.removeProperty('--dx');
+        el.style.removeProperty('--dy');
+        el.style.removeProperty('--r');
+        delete el.dataset.bugActive;
+      });
+    }
+    setBugs([]);
+    setScore(0);
+    setCrash(0);
+    setElapsed(0);
+    setWave(1);
+    waveRef.current = 1;
+    setTool('tape');
+    comboRef.current = { count: 0, lastFix: 0 };
+    getAudio(); // warm up audio context on user gesture
+    setScreen('playing');
+  };
+
+  // ============================================================
+  //  Render
+  // ============================================================
+  return (
+    <>
+      <LandingPage ref={pageRef} />
+
+      {/* Scanline + CRT overlay only while playing */}
+      {screen === 'playing' && <div className="scanline" />}
+
+      {/* Bug overlays */}
+      {screen === 'playing' && bugs.map((bug) => {
+        if (bug.type === 'CONSOLE') {
+          return (
+            <div
+              key={bug.id}
+              className="console-popup"
+              style={{ left: bug.x, top: bug.y, transform: `rotate(${bug.rot}deg)` }}
+              onClick={(e) => onConsoleClick(bug, e)}
+            >
+              <div className="title">
+                <span>⚠ Console Error</span>
+                <span style={{ cursor: 'pointer' }}>✕</span>
+              </div>
+              <div className="body">
+                {bug.message}
+                {bug.maxHp > 1 && (
+                  <div className="hp-bar">
+                    <div className="hp-fill" style={{ width: `${(bug.hp / bug.maxHp) * 100}%` }} />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        }
+        if (bug.type === 'LEAK') {
+          return (
+            <div
+              key={bug.id}
+              className="memory-leak"
+              style={{ left: bug.x, top: bug.y }}
+              onMouseDown={(e) => onLeakInteract(bug, e)}
+              onMouseEnter={(e) => { if (tool === 'vacuum') onLeakInteract(bug, e); }}
+            >
+              {bug.text}
+            </div>
+          );
+        }
+        return null; // CSS bugs are handled by modifying the DOM directly
+      })}
+
+      {/* Mark the actual DOM elements with data-bug-active to show them */}
+      {screen === 'playing' && <ApplyCssBugMarkers bugs={bugs} pageRef={pageRef} />}
+
+      {/* HUD */}
+      {screen === 'playing' && (
+        <HUD
+          score={score}
+          crash={crash}
+          elapsed={elapsed}
+          wave={wave}
+          tool={tool}
+          setTool={(t) => { setTool(t); sfx('tool'); }}
+        />
+      )}
+
+      {/* Score flashes */}
+      {flashes.map((f) => (
+        <div key={f.id} className="floating-score" style={{ left: f.x, top: f.y, color: f.color }}>
+          {f.amount}
+        </div>
+      ))}
+
+      {/* Confetti */}
+      {confetti.map((c) => (
+        <div
+          key={c.id}
+          className="confetti-piece"
+          style={{
+            left: c.x, top: c.y,
+            background: c.color,
+            '--fx': `${c.fx}px`,
+            '--fy': `${c.fy}px`,
+          }}
+        />
+      ))}
+
+      {/* Combo text */}
+      {comboText && <div className="combo-flash">{comboText}</div>}
+
+      {/* Start screen */}
+      {screen === 'start' && <StartScreen onStart={startGame} highScore={highScore} bestTime={bestTime} />}
+
+      {/* Game over screen */}
+      {screen === 'over' && (
+        <GameOverScreen
+          score={score}
+          elapsed={elapsed}
+          wave={wave}
+          highScore={highScore}
+          bestTime={bestTime}
+          onRestart={startGame}
+        />
+      )}
+    </>
+  );
+}
+
+// Marks DOM elements so drag handler can find them; keeps state-driven bug list aligned with DOM
+function ApplyCssBugMarkers({ bugs, pageRef }) {
+  // Nothing actually rendered — this effect keeps data-bug-active attribute in sync
+  useEffect(() => {
+    // The attribute is set when bug is spawned. Remove any stale attributes whose bug id is no longer in state.
+    const page = pageRef.current;
+    if (!page) return;
+    const liveIds = new Set(bugs.map((b) => String(b.id)));
+    page.querySelectorAll('[data-bug-active]').forEach((el) => {
+      if (!liveIds.has(el.dataset.bugActive)) {
+        el.classList.remove('bug-drift', 'bug-comic', 'bug-invert', 'bug-chromatic');
+        el.style.transform = '';
+        el.style.removeProperty('--dx');
+        el.style.removeProperty('--dy');
+        el.style.removeProperty('--r');
+        delete el.dataset.bugActive;
+      }
+    });
+  }, [bugs, pageRef]);
+  return null;
+}
+
+// ============================================================
+//  HUD
+// ============================================================
+function HUD({ score, crash, elapsed, wave, tool, setTool }) {
+  const danger = crash > 70;
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+      <div className="px-6 py-3 flex items-center justify-between gap-4 bg-slate-950/90 border-b border-slate-800 backdrop-blur-md pointer-events-auto">
+        {/* Left: logo + score */}
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center font-black text-slate-900 text-sm">D</div>
+            <span className="font-black tracking-tight">DOM DEFENDER</span>
+          </div>
+          <div className="flex items-center gap-5">
+            <Stat label="Score" value={score.toLocaleString()} />
+            <Stat label="Time"  value={`${Math.floor(elapsed)}s`} />
+            <Stat label="Wave"  value={wave} valueClass="text-violet-300" />
+          </div>
+        </div>
+
+        {/* Center: crash meter */}
+        <div className="flex-1 max-w-xl">
+          <div className="flex items-center justify-between mb-1">
+            <span className={`neon-label ${danger ? 'text-red-400' : 'text-slate-400'}`}>Server Crash</span>
+            <span className={`text-xs font-mono ${danger ? 'text-red-300' : 'text-slate-300'}`}>{Math.floor(crash)}%</span>
+          </div>
+          <div className="crash-meter-bg h-3 rounded-full">
+            <div
+              className={`crash-meter-fill h-full rounded-full ${danger ? 'danger' : ''}`}
+              style={{ width: `${crash}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Right: toolbar */}
+        <div className="flex items-center gap-2">
+          {Object.values(TOOLS).map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTool(t.id)}
+              className={`toolbar-btn px-3 py-2 rounded-lg border border-white/10 flex items-center gap-2 text-sm ${tool === t.id ? 'active text-white' : 'text-slate-300 bg-slate-900/60'}`}
+              title={t.hint}
+            >
+              <span className="text-lg">{t.icon}</span>
+              <span className="font-semibold hidden md:inline">{t.label}</span>
+              <span className="neon-label bg-black/30 px-1.5 py-0.5 rounded">{t.key}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="px-6 py-1 text-center text-xs text-slate-500 bg-slate-950/60 border-b border-slate-900/60">
+        {TOOLS[tool.toUpperCase()]?.hint}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, valueClass = '' }) {
+  return (
+    <div className="flex flex-col items-start leading-tight">
+      <span className="neon-label text-slate-500">{label}</span>
+      <span className={`font-mono font-bold text-sm ${valueClass}`}>{value}</span>
+    </div>
+  );
+}
+
+// ============================================================
+//  Start Screen
+// ============================================================
+function StartScreen({ onStart, highScore, bestTime }) {
+  return (
+    <div className="overlay-modal">
+      <div className="max-w-2xl w-full mx-6 bg-slate-950 border border-slate-800 rounded-3xl p-10 shadow-2xl relative overflow-hidden">
+        <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-violet-500/20 blur-3xl" />
+        <div className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-cyan-400/20 blur-3xl" />
+
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-400 flex items-center justify-center font-black text-slate-900 text-2xl">D</div>
+            <div>
+              <div className="text-xs text-cyan-300 neon-label">404: Survival Found</div>
+              <h1 className="text-4xl font-black tracking-tight">DOM Defender</h1>
+            </div>
+          </div>
+
+          <p className="text-slate-300 mt-4 mb-6 leading-relaxed">
+            The website is under attack. CSS is drifting, memory is leaking,
+            and errors are popping up everywhere. <span className="text-cyan-300 font-semibold">You are the Webmaster.</span> Your
+            mission: patch the DOM before the server crash meter hits 100%.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-3 mb-6">
+            {Object.values(TOOLS).map((t) => (
+              <div key={t.id} className="glass rounded-xl p-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-xl">{t.icon}</span>
+                  <span className="font-bold text-sm">{t.label}</span>
+                  <span className="neon-label ml-auto bg-black/30 px-1.5 py-0.5 rounded">{t.key}</span>
+                </div>
+                <p className="text-xs text-slate-400">{t.hint}</p>
+              </div>
+            ))}
+          </div>
+
+          {(highScore > 0 || bestTime > 0) && (
+            <div className="flex items-center gap-6 mb-6 text-sm">
+              {highScore > 0 && <div><span className="neon-label text-slate-500">Best Score:</span> <span className="font-mono font-bold text-cyan-300 ml-2">{highScore.toLocaleString()}</span></div>}
+              {bestTime > 0  && <div><span className="neon-label text-slate-500">Longest Run:</span> <span className="font-mono font-bold text-violet-300 ml-2">{Math.floor(bestTime)}s</span></div>}
+            </div>
+          )}
+
+          <button
+            onClick={onStart}
+            className="w-full bg-gradient-to-r from-violet-500 to-cyan-400 text-slate-900 font-black text-lg py-4 rounded-xl hover:scale-[1.02] transition-transform shadow-xl"
+          >
+            DEPLOY DEFENDER →
+          </button>
+
+          <p className="text-xs text-slate-500 mt-4 text-center">
+            Tip: switch tools with number keys <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">1</kbd> <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">2</kbd> <kbd className="px-1.5 py-0.5 bg-slate-800 rounded text-slate-300">3</kbd> · fast fixes build combos
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+//  Game Over Screen
+// ============================================================
+function GameOverScreen({ score, elapsed, wave, highScore, bestTime, onRestart }) {
+  const beatScore = score > 0 && score >= highScore;
+  const beatTime = elapsed > 0 && elapsed >= bestTime;
+  return (
+    <div className="overlay-modal">
+      <div className="max-w-md w-full mx-6 bg-slate-950 border-2 border-red-500/50 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+        <div className="absolute inset-x-0 top-0 bg-red-500 text-slate-950 font-black text-xs text-center py-1 tracking-widest overflow-hidden whitespace-nowrap">
+          <span className="marquee">⚠ SERVER CRASH ⚠ ROLLBACK FAILED ⚠ ALL HANDS ON DECK ⚠ SERVER CRASH ⚠ </span>
+        </div>
+
+        <div className="mt-8">
+          <div className="text-6xl mb-2 text-center">💥</div>
+          <h2 className="text-3xl font-black text-center mb-1">SYSTEM DOWN</h2>
+          <p className="text-slate-400 text-center text-sm mb-6">The server has crashed. Here's what you accomplished:</p>
+
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            <ResultStat label="Score" value={score.toLocaleString()} highlight={beatScore} color="text-cyan-300" />
+            <ResultStat label="Survived" value={`${Math.floor(elapsed)}s`} highlight={beatTime} color="text-violet-300" />
+            <ResultStat label="Wave" value={wave} color="text-yellow-300" />
+          </div>
+
+          {(beatScore || beatTime) && (
+            <div className="text-center mb-4 text-sm font-bold text-yellow-300 animate-pulse">
+              {beatScore && beatTime ? '🏆 New best score AND longest run!' : beatScore ? '🏆 New high score!' : '🏆 New personal best time!'}
+            </div>
+          )}
+
+          <button
+            onClick={onRestart}
+            className="w-full bg-gradient-to-r from-violet-500 to-cyan-400 text-slate-900 font-black text-lg py-3 rounded-xl hover:scale-[1.02] transition-transform"
+          >
+            RESTART SERVER ↻
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ResultStat({ label, value, color = 'text-white', highlight }) {
+  return (
+    <div className={`glass rounded-xl p-3 text-center ${highlight ? 'ring-2 ring-yellow-400' : ''}`}>
+      <div className="neon-label text-slate-500 mb-1">{label}</div>
+      <div className={`font-mono font-black text-xl ${color}`}>{value}</div>
+    </div>
+  );
+}
+
+// ============================================================
+//  Mount
+// ============================================================
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
