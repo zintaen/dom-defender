@@ -310,7 +310,7 @@ export default function BYOGame({ url }: { url: string }) {
               {misses} misses
             </p>
             <p className="text-slate-500 text-xs mb-5">
-              Sandbox scores don't save to the leaderboard. Play{" "}
+              Sandbox scores don&apos;t save to the leaderboard. Play{" "}
               <Link href="/play" className="underline decoration-dotted hover:text-slate-300">
                 ranked endless
               </Link>{" "}

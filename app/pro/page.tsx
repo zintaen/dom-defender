@@ -106,7 +106,7 @@ export default function ProPage() {
       {state?.isPro && state?.billingEnabled && (
         <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-5 text-center mb-10">
           <div className="text-3xl mb-1">🌟</div>
-          <div className="font-bold mb-1">You're a Pro member — thank you.</div>
+          <div className="font-bold mb-1">You&apos;re a Pro member — thank you.</div>
           <div className="text-sm text-slate-300">
             Head to the{" "}
             <Link href="/shop" className="underline decoration-dotted hover:text-white">
@@ -167,11 +167,11 @@ export default function ProPage() {
         <section className="rounded-2xl border border-violet-500/40 bg-violet-500/10 p-6">
           <h2 className="text-2xl font-black mb-1">Join the waitlist</h2>
           <p className="text-slate-300 text-sm mb-4">
-            We'll email you when Pro opens. No charges until you pick a tier.
+            We&apos;ll email you when Pro opens. No charges until you pick a tier.
           </p>
           {submitted ? (
             <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-200">
-              ✓ You're on the list. Welcome aboard.
+              ✓ You&apos;re on the list. Welcome aboard.
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-3">
@@ -193,7 +193,7 @@ export default function ProPage() {
               {error && <div className="text-sm text-red-300">{error}</div>}
               <div className="flex items-center justify-between flex-wrap gap-3">
                 <p className="text-xs text-slate-500">
-                  We'll only use your email to notify you about Pro.
+                  We&apos;ll only use your email to notify you about Pro.
                 </p>
                 <button
                   type="submit"

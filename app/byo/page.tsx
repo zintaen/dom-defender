@@ -85,7 +85,7 @@ function BYOPage() {
       <h1 className="text-4xl font-black tracking-tight mb-2">🧪 BYO-Website</h1>
       <p className="text-slate-400 mb-6">
         Pick any site to use as the backdrop. Bugs spawn on top of it and you swat them.
-        This is a sandbox — scores don't save.
+        This is a sandbox — scores don&apos;t save.
       </p>
 
       {/* First-time cookie / consent banner */}
@@ -94,14 +94,14 @@ function BYOPage() {
           <h2 className="font-bold mb-2">Before we load a third-party site</h2>
           <ul className="list-disc list-inside space-y-1 text-sm text-slate-300 mb-4">
             <li>
-              The site loads in a <span className="font-mono">sandboxed iframe</span> that can't
+              The site loads in a <span className="font-mono">sandboxed iframe</span> that can&apos;t
               read your cookies from this app.
             </li>
             <li>
               We only send a standard web request to the URL — no tracking pixels, no extra headers.
             </li>
             <li>
-              Some sites (Google, Facebook, most banks) refuse to be embedded. That's fine; pick a
+              Some sites (Google, Facebook, most banks) refuse to be embedded. That&apos;s fine; pick a
               different one.
             </li>
             <li>
@@ -178,7 +178,7 @@ function BYOPage() {
           </div>
 
           <p className="text-xs text-slate-500 mt-8">
-            Tip: if your chosen site shows as blank, it's probably sending{" "}
+            Tip: if your chosen site shows as blank, it&apos;s probably sending{" "}
             <span className="font-mono">X-Frame-Options: DENY</span>. The overlay still works; just
             pick a different site for a better backdrop.
           </p>

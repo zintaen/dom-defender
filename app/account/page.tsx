@@ -161,7 +161,7 @@ export default function AccountPage() {
         <div>
           <h3 className="font-bold mb-1">Want more achievements?</h3>
           <p className="text-sm text-slate-400">
-            See everything you've unlocked and what's still out there.
+            See everything you&apos;ve unlocked and what&apos;s still out there.
           </p>
         </div>
         <Link
