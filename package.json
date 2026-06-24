@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint app components lib",
     "test": "vitest run",
     "test:watch": "vitest",
     "size": "size-limit"
@@ -21,6 +21,7 @@
     "react-dom": "19.2.7"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
     "@size-limit/file": "^11.0.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.19.43",
