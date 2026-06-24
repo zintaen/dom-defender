@@ -8,6 +8,7 @@ import { evaluateAchievements, totalCoinsForAchievements, RunSummary } from "@/l
 import { todaysDailyKey, seedFromDateKey } from "@/lib/game/dailySeed";
 import { validateRunAgainstReplay } from "@/lib/game/scoreValidator";
 import type { ReplayLog } from "@/lib/game/replay";
+import { reportError } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
@@ -134,7 +135,7 @@ export async function POST(req: Request) {
       unlockedSkins: skinsToUnlock,
     });
   } catch (e: any) {
-    console.error("[scores POST]", e);
+    await reportError(e, { route: "POST /api/scores" });
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }

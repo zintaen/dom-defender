@@ -6,6 +6,7 @@ import { connectDB } from "@/lib/mongodb";
 import ByoAttempt from "@/models/ByoAttempt";
 import { validateByoUrl } from "@/lib/game/byoValidator";
 import { clientIpFromHeaders } from "@/lib/rateLimit";
+import { reportError } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
@@ -81,7 +82,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, url: v.url });
   } catch (e) {
-    console.error("[byo-attempt POST]", e);
+    await reportError(e, { route: "POST /api/byo-attempt" });
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }

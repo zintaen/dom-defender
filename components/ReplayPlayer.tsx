@@ -1,7 +1,13 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ReplayEvent, ReplaySnapshot } from "@/lib/game/replay";
+
+// Timeline chart dimensions. Module-level constants so the hooks below do not
+// need to list them as dependencies.
+const CHART_W = 720;
+const CHART_H = 180;
+const pad = 8;
 
 export interface ReplayPayload {
   shortId: string;
@@ -88,16 +94,14 @@ export default function ReplayPlayer({ replay }: { replay: ReplayPayload }) {
     return { currentSnap: cur, currentTool: tool, activeEvents: recent, maxScore: maxS, maxCrash: maxC };
   }, [t, replay]);
 
-  // Timeline chart dimensions
-  const CHART_W = 720;
-  const CHART_H = 180;
-  const pad = 8;
-  const xScale = (tt: number) => pad + (tt / duration) * (CHART_W - pad * 2);
-  const yScoreScale = (s: number) => CHART_H - pad - (s / maxScore) * (CHART_H - pad * 2);
-  const yCrashScale = (c: number) => CHART_H - pad - (c / maxCrash) * (CHART_H - pad * 2);
+  // Timeline chart scales, memoized so the path useMemos below stay stable
+  // (each only changes when its inputs do).
+  const xScale = useCallback((tt: number) => pad + (tt / duration) * (CHART_W - pad * 2), [duration]);
+  const yScoreScale = useCallback((s: number) => CHART_H - pad - (s / maxScore) * (CHART_H - pad * 2), [maxScore]);
+  const yCrashScale = useCallback((c: number) => CHART_H - pad - (c / maxCrash) * (CHART_H - pad * 2), [maxCrash]);
 
-  const scorePath = useMemo(() => pathFrom(replay.snapshots, (s) => [xScale(s.t), yScoreScale(s.score)]), [replay.snapshots, duration, maxScore]);
-  const crashPath = useMemo(() => pathFrom(replay.snapshots, (s) => [xScale(s.t), yCrashScale(s.crash)]), [replay.snapshots, duration]);
+  const scorePath = useMemo(() => pathFrom(replay.snapshots, (s) => [xScale(s.t), yScoreScale(s.score)]), [replay.snapshots, xScale, yScoreScale]);
+  const crashPath = useMemo(() => pathFrom(replay.snapshots, (s) => [xScale(s.t), yCrashScale(s.crash)]), [replay.snapshots, xScale, yCrashScale]);
 
   // Event markers for the timeline (waves, boss events, power-ups)
   const markers = replay.events.filter((e) =>

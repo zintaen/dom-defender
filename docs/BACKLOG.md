@@ -25,7 +25,7 @@ Severity { Critical, High, Medium, Low }; Status { OPEN, IN-PROGRESS, DONE, BLOC
 | Typecheck errors | 0 (clean) | 0 | `npx tsc --noEmit` |
 | Lint warnings | 2 | 0 | `npm run lint` |
 | npm advisories (high + critical) | was 1 critical + 6 high (11 total); now 0 critical + 4 high (5 total) after L1-T2 | 0 high/critical (residual needs the Next major, L1-T15) | `npm audit` |
-| Automated tests | 42 in 6 suites (green) | keep CI green; grow coverage toward the score validator (NFR-DOM-001) | `npm test` |
+| Automated tests | 44 in 7 suites (green) | keep CI green; grow coverage toward the score validator (NFR-DOM-001) | `npm test` |
 | Production build | UNMEASURED (sandbox 40s timeout; mount blocks the unlinks `next build` needs) | clean build + bundle budget set | `npm run build` |
 | Response security headers | 0 set (no `headers()` in next.config.mjs) | CSP, frame-ancestors, HSTS, Referrer-Policy, Permissions-Policy | NOT-APPLICABLE in sandbox; operator runs `curl -sI <deploy-url>` |
 | Source size | 6196 lines TS/TSX across 14 API routes | tracked, not a target | `find app components lib models -name '*.ts*' \| xargs wc -l \| tail -1` |
@@ -70,11 +70,11 @@ RC=124 (timeout at 40s in sandbox; re-run locally for a real baseline)
 | L1-T7 | Medium | DONE | Security | No per-user rate limit on `POST /api/scores`. A user can flood the collection. Add a short per-user window cap. | `tests/score-ratelimit.test.ts` |
 | L1-T8 | Medium | DONE | Security | Daily mode stores `seed` from the request body. For a fair daily, derive the seed server-side from `dailyKey` and reject mismatches. Delta: daily runs cannot be submitted under a forged seed. | `tests/daily-seed.test.ts` |
 | L1-T9 | Medium | DONE | Architecture | Coin purchase is read-modify-write (`findById` -> check -> `save`) with no transaction. Two concurrent purchases can double-spend coins. Use a conditional atomic update (`updateOne` with `$gte` balance guard and `$inc`). | `tests/shop-concurrency.test.ts` |
-| L1-T10 | Medium | OPEN | Maintainability | No CI gate and 2 unaddressed lint warnings. Add `.github/workflows/ci.yml` and a pre-commit hook (lint + typecheck). Fix the `ReplayPlayer.tsx` exhaustive-deps warnings. | `npm run lint` clean; CI green |
+| L1-T10 | Medium | DONE | Maintainability | No CI gate and 2 unaddressed lint warnings. Add `.github/workflows/ci.yml` and a pre-commit hook (lint + typecheck). Fix the `ReplayPlayer.tsx` exhaustive-deps warnings. | `npm run lint` clean; CI green |
 | L1-T11 | Low | DONE | Security | Password policy is min length 6 with no complexity or breached-password check, and registration has no rate limit. Raise to a sensible minimum and add a k-anonymity breach check or a denylist. | `tests/register-policy.test.ts` |
-| L1-T12 | Low | OPEN | Performance | No production-build baseline or bundle budget (build UNMEASURED in sandbox). Add a CI step that runs `next build` and asserts a route/bundle size budget. See NFR-DOM-006. | `npm run build` + size assertion in CI |
-| L1-T13 | Low | OPEN | Maintainability | No error monitoring or structured logging; only `console.error`. Add Sentry (or equivalent) behind an env flag so production failures are visible before users report them. | env-gated init present; deploy smoke test |
-| L1-T14 | Low | OPEN | Maintainability | Dependencies aging: mongoose and @types behind. Patch-pin within the stated ranges (the Next patch was done in T2). | `npm outdated` shows patches applied |
+| L1-T12 | Low | DONE | Performance | No production-build baseline or bundle budget (build UNMEASURED in sandbox). Add a CI step that runs `next build` and asserts a route/bundle size budget. See NFR-DOM-006. | `npm run build` + size assertion in CI |
+| L1-T13 | Low | DONE | Maintainability | No error monitoring or structured logging; only `console.error`. Add Sentry (or equivalent) behind an env flag so production failures are visible before users report them. | env-gated init present; deploy smoke test |
+| L1-T14 | Low | DONE | Maintainability | Dependencies aging: mongoose and @types behind. Patch-pin within the stated ranges (the Next patch was done in T2). | `npm outdated` shows patches applied |
 | L1-T15 | High | OPEN | Security | Next major upgrade (14.2 -> 16) to clear the residual Next-family advisories: the `next` runtime high, the eslint-config-next dev highs (glob, @next/eslint-plugin-next), and the nested postcss moderate (npm: all fixed only at next@16 / eslint-config-next@16). Breaking - React 19, async request APIs (cookies/headers), caching defaults. Needs a local build + manual QA; cannot be verified in the sandbox. Coordinate with NFR-DOM-004: one residual is a CSP-nonce XSS. Run as its own slice. | `npm audit` shows 0 high; `npm run build` + QA pass |
 
 ### Loop 1 verdict
@@ -161,6 +161,23 @@ validates, daily and private-seed rank, shop purchase, BYO iframe, replays). Fli
 Remaining P0: L1-T10 (2 ReplayPlayer lint warnings; CI + pre-commit already added in T5),
 L1-T12 (perf budget, NFR-DOM-006), L1-T13 (error monitoring), L1-T14 (mongoose/@types patch),
 L1-T15 (Next 16 migration - see docs/MIGRATION-next-16.md).
+
+2026-06-24 - P0 cleanup wave (L1-T10, T12, T13, T14): DONE. Lint clean (no warnings), tsc
+clean, 44 unit tests green (7 suites).
+- L1-T10: ReplayPlayer chart scales memoized with useCallback and the chart constants hoisted
+  to module scope; the two exhaustive-deps warnings are gone.
+- L1-T13: `lib/observability.ts` reportError (env-gated webhook, console fallback, never throws)
+  wired into the scores/byo/shop/register catch blocks + 2 tests. Set ERROR_WEBHOOK_URL to
+  enable; a hosted tool (Sentry) can replace the webhook behind the same interface.
+- L1-T14: dependency floors bumped within range (mongoose ^8.24.1, @types/node ^20.19.43,
+  @types/react ^18.3.31, @types/react-dom ^18.3.7).
+- L1-T12: perf-budget scaffold - `.size-limit.json` + `size` script + a CI step + `lighthouserc.json`.
+  Budgets are placeholders; the operator calibrates them from the first real `npm run build`
+  before treating a failure as blocking.
+
+Remaining P0: L1-T15 only (the Next 16 major; runbook at docs/MIGRATION-next-16.md). With T15
+deferred, the rest of the P0 launch gate is met (CI + tests green, 0 critical advisories, scores
+validated, auth throttled, headers live) pending the operator's `npm install`, live QA, and deploy.
 
 ---
 

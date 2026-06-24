@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { getCosmetic, isCoinPurchasable, hasPrerequisites, isUsdPurchasable } from "@/lib/game/cosmetics";
 import { isProBillingEnabled } from "@/lib/pro";
+import { reportError } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
@@ -117,7 +118,7 @@ export async function POST(req: Request) {
       ownedCosmetics: updated.ownedCosmetics,
     });
   } catch (e: any) {
-    console.error("[shop/purchase POST]", e);
+    await reportError(e, { route: "POST /api/shop/purchase" });
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }

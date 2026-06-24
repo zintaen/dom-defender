@@ -5,6 +5,7 @@ import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import AuthAttempt from "@/models/AuthAttempt";
 import { clientIpFromHeaders } from "@/lib/rateLimit";
+import { reportError } from "@/lib/observability";
 
 export async function POST(req: Request) {
   try {
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true, userId: String(u._id), username: u.username });
   } catch (e: any) {
-    console.error("[register]", e);
+    await reportError(e, { route: "POST /api/auth/register" });
     return NextResponse.json({ error: "Server error." }, { status: 500 });
   }
 }
