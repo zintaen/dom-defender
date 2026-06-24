@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Local fast gate so red never reaches CI (NFR-DOM-005). Enable once with:
+#   git config core.hooksPath .githooks
+#   chmod +x .githooks/pre-commit
+set -e
+
+echo "pre-commit: lint"
+npm run lint
+
+echo "pre-commit: typecheck"
+npx tsc --noEmit
+
+echo "pre-commit: tests"
+npm test

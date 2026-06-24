@@ -1,0 +1,41 @@
+name: CI
+
+# The AWH-style promote-to-done gate (NFR-DOM-005 / BACKLOG L1-T5).
+# Nothing merges to main unless lint, typecheck, unit tests, and the build are green.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      # Use `npm ci` once package-lock.json includes vitest. Until the operator
+      # runs `npm install` locally and commits the refreshed lock, `npm ci` would
+      # fail on the lock mismatch, so the first commit may need `npm install` here.
+      - run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+        env:
+          # The build does not connect to a real database. These keep next-auth and
+          # the build calm in CI; they are not real secrets and grant no access.
+          NEXTAUTH_SECRET: ci-build-placeholder-not-a-secret
+          NEXTAUTH_URL: http://localhost:3000
