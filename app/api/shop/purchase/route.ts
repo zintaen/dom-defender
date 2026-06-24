@@ -95,15 +95,26 @@ export async function POST(req: Request) {
       );
     }
 
-    user.totalCoins = Math.max(0, user.totalCoins - price);
-    user.ownedCosmetics = Array.from(new Set([...user.ownedCosmetics, cosmetic.id]));
-    await user.save();
+    // Atomic, race-safe deduction (L1-T9): the update only applies if the balance
+    // still covers the price AND the item is not already owned. Two concurrent
+    // purchases can no longer both pass the earlier check and double-spend.
+    const updated = await User.findOneAndUpdate(
+      { _id: user._id, totalCoins: { $gte: price }, ownedCosmetics: { $ne: cosmetic.id } },
+      { $inc: { totalCoins: -price }, $addToSet: { ownedCosmetics: cosmetic.id } },
+      { new: true }
+    );
+    if (!updated) {
+      return NextResponse.json(
+        { error: "Purchase could not be completed — your coins changed or you already own this item." },
+        { status: 409 }
+      );
+    }
 
     return NextResponse.json({
       ok: true,
       cosmeticId: cosmetic.id,
-      coins: user.totalCoins,
-      ownedCosmetics: user.ownedCosmetics,
+      coins: updated.totalCoins,
+      ownedCosmetics: updated.ownedCosmetics,
     });
   } catch (e: any) {
     console.error("[shop/purchase POST]", e);

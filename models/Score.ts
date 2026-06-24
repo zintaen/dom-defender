@@ -14,6 +14,7 @@ export interface IScore {
   bossesDefeated: number;
   maxCombo: number;
   skinUsed: string;
+  verified: boolean;         // score validated against its replay (NFR-DOM-001)
   createdAt: Date;
 }
 
@@ -31,6 +32,7 @@ const ScoreSchema = new Schema<IScore>(
     bossesDefeated: { type: Number, required: true, default: 0 },
     maxCombo: { type: Number, required: true, default: 0 },
     skinUsed: { type: String, default: "default" },
+    verified: { type: Boolean, default: false, index: true },
   },
   { timestamps: { createdAt: true, updatedAt: false } }
 );

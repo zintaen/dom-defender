@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import ByoAttempt from "@/models/ByoAttempt";
 import { validateByoUrl } from "@/lib/game/byoValidator";
+import { clientIpFromHeaders } from "@/lib/rateLimit";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +21,12 @@ function hashIp(ip: string): string {
 }
 
 function getIp(req: Request): string {
-  const fwd = req.headers.get("x-forwarded-for") ?? "";
-  const ip = fwd.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "0.0.0.0";
-  return ip;
+  // Use platform-verified headers, not the spoofable x-forwarded-for first hop
+  // (NFR-DOM-002 / L1-T6). Set TRUST_FORWARDED_FOR=true only behind a proxy that
+  // sanitizes that header (e.g. when self-hosting behind your own nginx).
+  return clientIpFromHeaders((n) => req.headers.get(n), {
+    trustForwardedFor: process.env.TRUST_FORWARDED_FOR === "true",
+  });
 }
 
 // POST /api/byo-attempt { url }

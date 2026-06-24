@@ -64,35 +64,46 @@ export default function PlayShell({
       signedIn: Boolean(session?.user),
     });
     if (!session?.user) return; // No save when signed out
+    // The score is submitted in onReplayReady (Game fires it immediately after
+    // this) so the server can validate it against the replay (NFR-DOM-001).
     setSubmitting(true);
     setSubmitError(null);
-    try {
-      const res = await fetch("/api/scores", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...summary, mode, seed: initialSeed }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setSubmitError(data?.error ?? "Failed to submit score.");
-      } else {
-        setSubmitResult({
-          newAchievements: data.newAchievements ?? [],
-          coinsEarned: data.coinsEarned ?? 0,
-          unlockedSkins: data.unlockedSkins ?? [],
-          runSummary: summary,
-        });
-        track("score_submitted", { mode, score: summary.score });
-      }
-    } catch (e: any) {
-      setSubmitError(e?.message ?? "Network error.");
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const onReplayReady = async (log: ReplayLog) => {
     if (!session?.user) return;
+    const summary = lastSummaryRef.current;
+
+    // 1) Submit the score together with its replay so the server can validate it
+    //    (NFR-DOM-001). Game delivers the replay right after onRunEnd, so the
+    //    summary ref is already set.
+    if (summary) {
+      try {
+        const res = await fetch("/api/scores", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...summary, mode, seed: initialSeed, replay: log }),
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          setSubmitError(data?.error ?? "Failed to submit score.");
+        } else {
+          setSubmitResult({
+            newAchievements: data.newAchievements ?? [],
+            coinsEarned: data.coinsEarned ?? 0,
+            unlockedSkins: data.unlockedSkins ?? [],
+            runSummary: summary,
+          });
+          track("score_submitted", { mode, score: summary.score });
+        }
+      } catch (e: any) {
+        setSubmitError(e?.message ?? "Network error.");
+      } finally {
+        setSubmitting(false);
+      }
+    }
+
+    // 2) Store the replay for the shareable link and the viewer.
     try {
       const res = await fetch("/api/replays", {
         method: "POST",

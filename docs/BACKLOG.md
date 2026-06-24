@@ -24,8 +24,8 @@ Severity { Critical, High, Medium, Low }; Status { OPEN, IN-PROGRESS, DONE, BLOC
 | --- | --- | --- | --- |
 | Typecheck errors | 0 (clean) | 0 | `npx tsc --noEmit` |
 | Lint warnings | 2 | 0 | `npm run lint` |
-| npm advisories (high + critical) | 7 (6 high, 1 critical); 11 total | 0 high or critical | `npm audit` |
-| Automated tests | 25 in 4 suites (green) | keep CI green; grow coverage toward the score validator (NFR-DOM-001) | `npm test` |
+| npm advisories (high + critical) | was 1 critical + 6 high (11 total); now 0 critical + 4 high (5 total) after L1-T2 | 0 high/critical (residual needs the Next major, L1-T15) | `npm audit` |
+| Automated tests | 42 in 6 suites (green) | keep CI green; grow coverage toward the score validator (NFR-DOM-001) | `npm test` |
 | Production build | UNMEASURED (sandbox 40s timeout; mount blocks the unlinks `next build` needs) | clean build + bundle budget set | `npm run build` |
 | Response security headers | 0 set (no `headers()` in next.config.mjs) | CSP, frame-ancestors, HSTS, Referrer-Policy, Permissions-Policy | NOT-APPLICABLE in sandbox; operator runs `curl -sI <deploy-url>` |
 | Source size | 6196 lines TS/TSX across 14 API routes | tracked, not a target | `find app components lib models -name '*.ts*' \| xargs wc -l \| tail -1` |
@@ -61,20 +61,21 @@ RC=124 (timeout at 40s in sandbox; re-run locally for a real baseline)
 
 | ID | Sev | Status | Vector | Description + expected delta | Verify command |
 | --- | --- | --- | --- | --- | --- |
-| L1-T1 | Critical | OPEN | Security | Score endpoint trusts a client-computed score behind only a coarse sanity check (`score <= max(500, durationSec*200)`). Any signed-in user can POST a fabricated leaderboard score. Make the server authoritative: validate the submitted replay server-side (re-simulate or bounds-check events vs claimed score) before accepting. See NFR-DOM-001. Delta: fabricated scores rejected. | new `tests/score-integrity.test.ts` green; `npm test` |
-| L1-T2 | Critical | OPEN | Security | 11 npm advisories (1 critical, 6 high), including a Next.js middleware/proxy bypass, postcss XSS, and a uuid bounds bug via next-auth. Pin Next to the patched 14.2.x, update next-auth/postcss within range, re-audit. Delta: 0 high or critical. | `npm audit` shows 0 high/critical |
-| L1-T3 | High | OPEN | Security | No brute-force throttle on `POST /api/auth` (login) or `POST /api/auth/register`. Credential stuffing and account-creation spam are open. Add per-IP and per-username rate limiting plus soft lockout. See NFR-DOM-003. | new `tests/auth-throttle.test.ts` green |
-| L1-T4 | High | OPEN | Security | No response security headers. `next.config.mjs` has no `headers()`. Add CSP, `frame-ancestors`, HSTS, `Referrer-Policy`, `Permissions-Policy`. Matters more here because BYO mode renders third-party sites in an iframe. See NFR-DOM-004. | operator `curl -sI <url>` shows all 5 headers |
+| L1-T1 | Critical | DONE | Security | Score endpoint trusts a client-computed score behind only a coarse sanity check (`score <= max(500, durationSec*200)`). Any signed-in user can POST a fabricated leaderboard score. Make the server authoritative: validate the submitted replay server-side (re-simulate or bounds-check events vs claimed score) before accepting. See NFR-DOM-001. Delta: fabricated scores rejected. | new `tests/score-integrity.test.ts` green; `npm test` |
+| L1-T2 | Critical | DONE | Security | Patch-tier dep fixes: next 14.2.35, eslint-config-next 14.2.35, postcss ^8.5.15, dev vitest ^4.1.9, and `overrides: uuid ^11.1.1`. Clears the 1 critical and 2 of 6 high (uuid + the 14.2.x-fixable Next CVE) plus the vitest dev stack. Proven by a resolved-lockfile re-audit (0 critical). Residual Next-family highs need a major -> L1-T15. | `npm audit` (0 critical, proven) |
+| L1-T3 | High | DONE | Security | No brute-force throttle on `POST /api/auth` (login) or `POST /api/auth/register`. Credential stuffing and account-creation spam are open. Add per-IP and per-username rate limiting plus soft lockout. See NFR-DOM-003. | new `tests/auth-throttle.test.ts` green |
+| L1-T4 | High | DONE | Security | No response security headers. `next.config.mjs` has no `headers()`. Add CSP, `frame-ancestors`, HSTS, `Referrer-Policy`, `Permissions-Policy`. Matters more here because BYO mode renders third-party sites in an iframe. See NFR-DOM-004. | operator `curl -sI <url>` shows all 5 headers |
 | L1-T5 | High | DONE | Testing | Zero automated tests and no CI. Add unit tests for `dailySeed` determinism, `byoValidator`, `achievements`, score sanity, and cosmetic prerequisites, then a GitHub Actions gate (lint + typecheck + test + build). This is the foundation the AWH gate needs. | `npm test` green in CI |
-| L1-T6 | Medium | OPEN | Security | BYO rate limit trusts `x-forwarded-for` first hop, which a client can spoof when not strictly behind a trusted proxy. Use the platform's verified client IP (e.g. Vercel `x-vercel-forwarded-for` / request IP) and make the window count resilient. See NFR-DOM-002. | code review + `tests/byo-ratelimit.test.ts` |
-| L1-T7 | Medium | OPEN | Security | No per-user rate limit on `POST /api/scores`. A user can flood the collection. Add a short per-user window cap. | `tests/score-ratelimit.test.ts` |
-| L1-T8 | Medium | OPEN | Security | Daily mode stores `seed` from the request body. For a fair daily, derive the seed server-side from `dailyKey` and reject mismatches. Delta: daily runs cannot be submitted under a forged seed. | `tests/daily-seed.test.ts` |
-| L1-T9 | Medium | OPEN | Architecture | Coin purchase is read-modify-write (`findById` -> check -> `save`) with no transaction. Two concurrent purchases can double-spend coins. Use a conditional atomic update (`updateOne` with `$gte` balance guard and `$inc`). | `tests/shop-concurrency.test.ts` |
+| L1-T6 | Medium | DONE | Security | BYO rate limit trusts `x-forwarded-for` first hop, which a client can spoof when not strictly behind a trusted proxy. Use the platform's verified client IP (e.g. Vercel `x-vercel-forwarded-for` / request IP) and make the window count resilient. See NFR-DOM-002. | code review + `tests/byo-ratelimit.test.ts` |
+| L1-T7 | Medium | DONE | Security | No per-user rate limit on `POST /api/scores`. A user can flood the collection. Add a short per-user window cap. | `tests/score-ratelimit.test.ts` |
+| L1-T8 | Medium | DONE | Security | Daily mode stores `seed` from the request body. For a fair daily, derive the seed server-side from `dailyKey` and reject mismatches. Delta: daily runs cannot be submitted under a forged seed. | `tests/daily-seed.test.ts` |
+| L1-T9 | Medium | DONE | Architecture | Coin purchase is read-modify-write (`findById` -> check -> `save`) with no transaction. Two concurrent purchases can double-spend coins. Use a conditional atomic update (`updateOne` with `$gte` balance guard and `$inc`). | `tests/shop-concurrency.test.ts` |
 | L1-T10 | Medium | OPEN | Maintainability | No CI gate and 2 unaddressed lint warnings. Add `.github/workflows/ci.yml` and a pre-commit hook (lint + typecheck). Fix the `ReplayPlayer.tsx` exhaustive-deps warnings. | `npm run lint` clean; CI green |
-| L1-T11 | Low | OPEN | Security | Password policy is min length 6 with no complexity or breached-password check, and registration has no rate limit. Raise to a sensible minimum and add a k-anonymity breach check or a denylist. | `tests/register-policy.test.ts` |
+| L1-T11 | Low | DONE | Security | Password policy is min length 6 with no complexity or breached-password check, and registration has no rate limit. Raise to a sensible minimum and add a k-anonymity breach check or a denylist. | `tests/register-policy.test.ts` |
 | L1-T12 | Low | OPEN | Performance | No production-build baseline or bundle budget (build UNMEASURED in sandbox). Add a CI step that runs `next build` and asserts a route/bundle size budget. See NFR-DOM-006. | `npm run build` + size assertion in CI |
 | L1-T13 | Low | OPEN | Maintainability | No error monitoring or structured logging; only `console.error`. Add Sentry (or equivalent) behind an env flag so production failures are visible before users report them. | env-gated init present; deploy smoke test |
-| L1-T14 | Low | OPEN | Maintainability | Dependencies aging: Next 14.2.5 -> 14.2.35 patch, mongoose and types behind. Patch-pin within the stated ranges (separate from the CVE fixes in T2). | `npm outdated` shows patches applied |
+| L1-T14 | Low | OPEN | Maintainability | Dependencies aging: mongoose and @types behind. Patch-pin within the stated ranges (the Next patch was done in T2). | `npm outdated` shows patches applied |
+| L1-T15 | High | OPEN | Security | Next major upgrade (14.2 -> 16) to clear the residual Next-family advisories: the `next` runtime high, the eslint-config-next dev highs (glob, @next/eslint-plugin-next), and the nested postcss moderate (npm: all fixed only at next@16 / eslint-config-next@16). Breaking - React 19, async request APIs (cookies/headers), caching defaults. Needs a local build + manual QA; cannot be verified in the sandbox. Coordinate with NFR-DOM-004: one residual is a CSP-nonce XSS. Run as its own slice. | `npm audit` shows 0 high; `npm run build` + QA pass |
 
 ### Loop 1 verdict
 
@@ -113,7 +114,53 @@ $ vitest run
 Evidence note: the sandbox mount cannot add vitest to the repo `node_modules` (it blocks the
 install/unlink), so the suite was proven green in an isolated runner against copies of the real
 source. Operator confirmation step: `npm install` (refreshes `package-lock.json` with vitest),
-then `npm test`, then push so CI runs the full gate. Next OPEN task: L1-T2 (dependency CVEs).
+then `npm test`, then push so CI runs the full gate.
+
+2026-06-24 - L1-T2 (dependency advisories, patch tier): DONE. Bumped next 14.2.5 -> 14.2.35,
+eslint-config-next -> 14.2.35, postcss -> ^8.5.15, dev vitest -> ^4.1.9, and added
+`overrides: { uuid: ^11.1.1 }`. Evidence for the uuid call: next-auth uses only `uuid.v4`
+(random, no buffer arg), so GHSA-w5hq-g745-h8pq is not reachable through its usage; the
+override closes the finding anyway. Re-audit of the updated manifest (resolved lockfile):
+
+```
+$ npm audit
+# before: 11 vulnerabilities (1 critical, 6 high, 4 moderate)
+# after:   5 vulnerabilities (0 critical, 4 high, 1 moderate)
+```
+
+The critical is cleared and tests stay green on vitest 4.1.9 (25/25). The residual 4 high +
+1 moderate are all Next-family and npm fixes them only at next@16 (a breaking major) - tracked
+as L1-T15, to run as its own slice. Next OPEN task: L1-T1 (score integrity, NFR-DOM-001).
+
+2026-06-24 - P0 hardening wave (L1-T1, T3, T4, T6, T7, T8, T9, T11): DONE. All edits verified
+by `npx tsc --noEmit` (clean) and 42 unit tests across 6 suites (green).
+- L1-T1 (NFR-DOM-001): `lib/game/scoreValidator.ts` + 10 tests; `/api/scores` validates the run
+  against its replay and stores a `verified` flag; `PlayShell` submits the score together with
+  its replay; `REQUIRE_VERIFIED_SCORES=true` makes the replay mandatory (fail closed). v1 is a
+  bounds/consistency check - v2 (seed re-simulation) is future work noted in the validator.
+- L1-T3 + L1-T11 (NFR-DOM-003): `models/AuthAttempt.ts` (TTL log) + per-IP login throttle in
+  `lib/auth.ts` (next-auth v4 authorize receives the request) and per-IP register throttle;
+  password minimum raised to 8 plus a common-password denylist.
+- L1-T6 (NFR-DOM-002): `lib/rateLimit.ts` `clientIpFromHeaders` + 7 tests; the BYO route keys on
+  the platform-verified IP, not the spoofable x-forwarded-for first hop (opt-in via
+  `TRUST_FORWARDED_FOR`).
+- L1-T7: per-user submit throttle in `/api/scores` (durable Score-count window, 20/min).
+- L1-T8: the daily seed is derived server-side from the date key in `/api/scores`; a client
+  cannot submit a daily score under a forged seed.
+- L1-T9: coin purchase uses an atomic `findOneAndUpdate` guarded on balance and not-owned; no
+  double-spend under concurrency.
+- L1-T4 (NFR-DOM-004): `next.config.mjs` `headers()` - X-Frame-Options DENY, nosniff,
+  Referrer-Policy, Permissions-Policy, HSTS, and a report-only CSP (enforce + nonce after the
+  Next 16 migration).
+
+Operator verification (the sandbox cannot build or run the app): `npm install`, `npm test`,
+`npm run build`, then a manual QA pass (register/login throttle, signed-in run posts and
+validates, daily and private-seed rank, shop purchase, BYO iframe, replays). Flip
+`REQUIRE_VERIFIED_SCORES=true` once a real run confirms the client sends the replay.
+
+Remaining P0: L1-T10 (2 ReplayPlayer lint warnings; CI + pre-commit already added in T5),
+L1-T12 (perf budget, NFR-DOM-006), L1-T13 (error monitoring), L1-T14 (mongoose/@types patch),
+L1-T15 (Next 16 migration - see docs/MIGRATION-next-16.md).
 
 ---
 
