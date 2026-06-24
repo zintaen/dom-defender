@@ -3,7 +3,7 @@ id: FR-DD-EDU-001
 title: "DOM Defender for teams: workshop / onboarding mode (CyberSkill funnel)"
 lane: EDU
 priority: SHOULD
-status: proposed
+status: scaffolded
 verify: T
 phase: P1
 milestone: P1 - strategic slice
@@ -79,3 +79,25 @@ Depends on NFR-DOM-001 (a team event needs a trustworthy board) and FR-DD-COMM-0
 Reuses the seed machinery (daily/tournament), the leaderboard pattern, and the AI coach. This is
 the strategic bet in the roadmap: build it after the core P1 loops exist, then use it in
 CyberSkill outreach. A Vietnamese room (FR-DD-REACH-002) is a strong local-market wedge.
+
+## Section 8 - implementation status (2026-06-24, scaffolded)
+
+Built and unit-tested:
+- lib/game/room.ts: makeRoomCode, isValidRoomCode, roomSeed (deterministic via seedFromDateKey),
+  rankMembers (standard competition ranking 1,2,2,4). 6 tests green.
+- lib/game/conceptMap.ts: CONCEPT_MAP (drift/error/leak/boss), explainBug, allConcepts - the
+  after-action teaching layer. 3 tests green.
+- models/Room.ts: code (unique), host, seed, status, timeBoxMinutes, members[], 24h TTL.
+- app/api/teams/route.ts: POST create/join/submit/close + GET standings, all behind auth().
+- app/teams/page.tsx: create-a-room (time box) + join-by-code.
+- app/teams/[room]/page.tsx: live standings poll, copy-join-link, "Play this room"
+  (/play?seed={roomSeed}), manual score submit, host close, closed-state concept-map recap.
+
+Known gaps to harden before this goes in front of a paying workshop:
+- The submit action stores a client-reported score. Route it through the NFR-DOM-001
+  replay-validated path (the same way /api/scores validates a run) so a room board cannot be
+  gamed. This is the one real correctness debt in the slice and is marked with a NOTE in the route.
+- "Play this room" hands the seed via query string; later, stamp the room code on the submitted
+  run server-side so a score can only count for the room it was actually played in.
+- Verification is sandbox-limited to the pure cores. tsc/lint/build on the next-16 branch is the
+  real gate for the React pages and the Mongoose model.

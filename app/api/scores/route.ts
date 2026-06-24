@@ -5,6 +5,7 @@ import User from "@/models/User";
 import Score from "@/models/Score";
 import { evaluateAchievements, totalCoinsForAchievements, RunSummary } from "@/lib/game/achievements";
 import { todaysDailyKey, seedFromDateKey } from "@/lib/game/dailySeed";
+import { weekKey, tournamentSeed } from "@/lib/game/tournament";
 import { validateRunAgainstReplay } from "@/lib/game/scoreValidator";
 import type { ReplayLog } from "@/lib/game/replay";
 import { reportError } from "@/lib/observability";
@@ -17,7 +18,8 @@ export async function POST(req: Request) {
     if (!session?.user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
 
     const body = await req.json();
-    const mode = body.mode === "daily" ? "daily" : "endless";
+    const mode: "endless" | "daily" | "tournament" =
+      body.mode === "daily" ? "daily" : body.mode === "tournament" ? "tournament" : "endless";
     const summary: RunSummary = {
       score: clampInt(body.score, 0, 10_000_000),
       durationSec: clampInt(body.durationSec, 0, 60 * 60),
@@ -78,16 +80,40 @@ export async function POST(req: Request) {
       );
     }
 
-    const dailyKey = mode === "daily" ? todaysDailyKey() : undefined;
-    // For daily runs the seed is derived server-side from the date key, so a
-    // client cannot submit a daily score under a forged seed (L1-T8). Endless /
-    // private-seed runs keep their client-supplied seed.
-    const seed =
-      mode === "daily"
-        ? seedFromDateKey(dailyKey!)
-        : typeof body.seed === "number" && Number.isFinite(body.seed)
-        ? Math.floor(body.seed) >>> 0
-        : undefined;
+    // Competitive buckets are derived server-side so a client cannot submit
+    // under a forged seed. Daily uses the date key (L1-T8); the weekly
+    // tournament uses the ISO-week key (FR-DD-SOC-003). Endless / private-seed
+    // runs keep their client-supplied seed.
+    let dailyKey: string | undefined;
+    let seed: number | undefined;
+    if (mode === "daily") {
+      dailyKey = todaysDailyKey();
+      seed = seedFromDateKey(dailyKey);
+    } else if (mode === "tournament") {
+      dailyKey = weekKey();
+      seed = tournamentSeed();
+    } else {
+      seed =
+        typeof body.seed === "number" && Number.isFinite(body.seed)
+          ? Math.floor(body.seed) >>> 0
+          : undefined;
+    }
+
+    // Bind a tournament run to this week's seed: if the replay carries a seed it
+    // must be the server's week seed, so a run recorded on a different (or
+    // forged) seed cannot be parked on the tournament board.
+    if (
+      mode === "tournament" &&
+      replay &&
+      typeof replay.seed === "number" &&
+      Number.isFinite(replay.seed) &&
+      (Math.floor(replay.seed) >>> 0) !== seed
+    ) {
+      return NextResponse.json(
+        { error: "Replay seed does not match this week's tournament." },
+        { status: 400 }
+      );
+    }
 
     const score = await Score.create({
       userId,

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import ReplayPlayer, { ReplayPayload } from "@/components/ReplayPlayer";
 import { isValidShortId } from "@/lib/game/replay";
+import { buildOgQuery } from "@/lib/og/ogParams";
 
 export const dynamic = "force-dynamic";
 
@@ -35,5 +36,20 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const who = replay.username ?? "Anonymous";
   const title = `${who}: ${replay.score.toLocaleString()} pts · Wave ${replay.wave} · DOM Defender`;
   const desc = `${replay.bugsFixed} bugs fixed, ${replay.bossesDefeated} bosses down, best combo x${replay.maxCombo}. Replay #${id}.`;
-  return { title, description: desc, openGraph: { title, description: desc } };
+  const h = await headers();
+  const host = h.get("host");
+  const proto = h.get("x-forwarded-proto") ?? (process.env.NODE_ENV === "production" ? "https" : "http");
+  const base = host ? `${proto}://${host}` : "";
+  const ogUrl = `${base}/api/og?${buildOgQuery({
+    name: who,
+    score: replay.score,
+    wave: replay.wave,
+    cta: "Beat this run",
+  })}`;
+  return {
+    title,
+    description: desc,
+    openGraph: { title, description: desc, images: [{ url: ogUrl, width: 1200, height: 630 }] },
+    twitter: { card: "summary_large_image", title, description: desc, images: [ogUrl] },
+  };
 }

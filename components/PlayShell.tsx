@@ -7,6 +7,7 @@ import { getSkin, Skin } from "@/lib/game/skins";
 import { RunSummary } from "@/lib/game/achievements";
 import { ReplayLog } from "@/lib/game/replay";
 import { track } from "@/lib/analytics";
+import { encodeChallenge } from "@/lib/game/challenge";
 
 interface SubmitResult {
   newAchievements: { id: string; name: string; icon: string; rewardCoins: number }[];
@@ -22,7 +23,7 @@ export default function PlayShell({
   initialSeed,
   dailyKey,
 }: {
-  mode: "endless" | "daily";
+  mode: "endless" | "daily" | "tournament";
   initialSeed?: number;
   dailyKey?: string;
 }) {
@@ -145,7 +146,11 @@ export default function PlayShell({
   return (
     <>
       <Game
-        mode={mode}
+        // The Game core only knows "endless" | "daily". A tournament run is a
+        // fixed-seed deterministic run, so it maps to the "daily" core path
+        // (seed set => director off, determinism preserved). The real
+        // "tournament" mode is still what PlayShell submits to /api/scores.
+        mode={mode === "tournament" ? "daily" : mode}
         skin={skin}
         initialSeed={initialSeed}
         dailyKey={dailyKey}
@@ -170,6 +175,8 @@ export default function PlayShell({
                 mode={mode}
                 dailyKey={dailyKey}
                 skinId={skin.id}
+                seed={initialSeed}
+                challengerName={(session?.user as any)?.username}
                 onClose={() => setSubmitResult(null)}
               />
             )}
@@ -211,21 +218,53 @@ function SubmitToast({
   mode,
   dailyKey,
   skinId,
+  seed,
+  challengerName,
   onClose,
 }: {
   result: SubmitResult;
-  mode: "endless" | "daily";
+  mode: "endless" | "daily" | "tournament";
   dailyKey?: string;
   skinId: string;
+  seed?: number;
+  challengerName?: string;
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const share = result.shareUrl;
   const { score, wave, bugsFixed, bossesDefeated, maxCombo, durationSec } = result.runSummary;
 
+  // Friend challenge link (FR-DD-SOC-001): only when the run had a seed, and
+  // never for tournament runs - a challenge link encodes the seed, and handing
+  // out the live week seed would let people pre-practice the tournament.
+  const [challengeCopied, setChallengeCopied] = useState(false);
+  const challengeUrl =
+    mode !== "tournament" && seed !== undefined && typeof window !== "undefined"
+      ? `${window.location.origin}/challenge/${encodeChallenge({
+          seed,
+          score,
+          name: challengerName ?? "A player",
+          mode,
+        })}`
+      : null;
+  const copyChallenge = async () => {
+    if (!challengeUrl) return;
+    try {
+      await navigator.clipboard.writeText(
+        `Beat my ${score.toLocaleString()} in DOM Defender: ${challengeUrl}`
+      );
+      setChallengeCopied(true);
+      setTimeout(() => setChallengeCopied(false), 2000);
+    } catch {
+      // no-op
+    }
+  };
+
   const shareText =
     mode === "daily"
       ? `I scored ${score.toLocaleString()} on the DOM Defender Daily Challenge (${dailyKey ?? "today"}) — wave ${wave}, ${bugsFixed} bugs, combo x${maxCombo}.`
+      : mode === "tournament"
+      ? `I scored ${score.toLocaleString()} in the DOM Defender weekly tournament — wave ${wave}, ${bugsFixed} bugs, combo x${maxCombo}.`
       : `I scored ${score.toLocaleString()} in DOM Defender — wave ${wave}, ${bugsFixed} bugs, combo x${maxCombo}.`;
   const xIntent =
     share && `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText + " ")}&url=${encodeURIComponent(share)}`;
@@ -312,6 +351,14 @@ function SubmitToast({
                     View replay →
                   </Link>
                 )}
+                {challengeUrl && (
+                  <button
+                    onClick={copyChallenge}
+                    className="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-200 border border-emerald-500/40 hover:bg-emerald-500/30"
+                  >
+                    {challengeCopied ? "✓ Challenge copied" : "Challenge a friend"}
+                  </button>
+                )}
               </div>
             ) : (
               <div className="text-xs text-slate-500">Saving replay…</div>
@@ -320,7 +367,13 @@ function SubmitToast({
 
           <div className="mt-3 flex gap-2">
             <a
-              href={mode === "daily" ? `/leaderboard?mode=daily` : "/leaderboard"}
+              href={
+                mode === "tournament"
+                  ? "/tournament"
+                  : mode === "daily"
+                  ? `/leaderboard?mode=daily`
+                  : "/leaderboard"
+              }
               className="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200"
             >
               View leaderboard

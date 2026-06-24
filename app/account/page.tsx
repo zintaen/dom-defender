@@ -8,6 +8,8 @@ import { SKINS } from "@/lib/game/skins";
 interface Profile {
   username: string;
   email?: string | null;
+  profilePublic?: boolean;
+  displayName?: string | null;
   selectedSkin: string;
   unlockedSkins: string[];
   unlockedAchievements: string[];
@@ -63,6 +65,29 @@ export default function AccountPage() {
     }
   };
 
+  const savePrivacy = async (patch: { profilePublic?: boolean; displayName?: string }) => {
+    if (!profile) return;
+    setSaving("privacy");
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data?.error ?? "Could not save");
+      } else {
+        setProfile({ ...profile, profilePublic: data.profilePublic, displayName: data.displayName });
+        setError(null);
+      }
+    } catch (e: any) {
+      setError(e?.message ?? "Network error");
+    } finally {
+      setSaving(null);
+    }
+  };
+
   if (status === "loading" || !profile) {
     return <main className="max-w-3xl mx-auto px-6 py-10 text-slate-400">Loading…</main>;
   }
@@ -87,6 +112,57 @@ export default function AccountPage() {
         <StatCard label="Runs" value={String(profile.totalRuns)} color="text-violet-300" />
         <StatCard label="Bugs Fixed" value={profile.totalBugsFixed.toLocaleString()} color="text-emerald-300" />
         <StatCard label="Longest Run" value={`${profile.longestRunSeconds}s`} color="text-pink-300" />
+      </section>
+
+      {/* Public profile */}
+      <section className="mb-10">
+        <h2 className="text-2xl font-black mb-1">🌐 Public profile</h2>
+        <p className="text-sm text-slate-400 mb-4">
+          Your profile is shareable at{" "}
+          <Link href={`/u/${profile.username}`} className="text-cyan-300 underline">
+            /u/{profile.username}
+          </Link>
+          . Turn it off to hide it.
+        </p>
+        <div className="rounded-2xl border border-slate-700 bg-slate-900/50 p-5 space-y-4">
+          <label className="flex items-center justify-between gap-4">
+            <span>
+              <span className="font-semibold block">Show my profile publicly</span>
+              <span className="text-sm text-slate-400">
+                When off, /u/{profile.username} shows a private notice and your data is not returned.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              checked={profile.profilePublic !== false}
+              disabled={saving === "privacy"}
+              onChange={(e) => savePrivacy({ profilePublic: e.target.checked })}
+              className="w-5 h-5 accent-cyan-400 shrink-0"
+            />
+          </label>
+          <div>
+            <label className="text-sm text-slate-400 block mb-1">Display name (optional)</label>
+            <div className="flex gap-2">
+              <input
+                defaultValue={profile.displayName ?? ""}
+                maxLength={32}
+                placeholder={profile.username}
+                id="displayName"
+                className="flex-1 bg-slate-800 rounded-lg px-3 py-2 text-slate-100"
+              />
+              <button
+                onClick={() => {
+                  const el = document.getElementById("displayName") as HTMLInputElement | null;
+                  savePrivacy({ displayName: el?.value ?? "" });
+                }}
+                disabled={saving === "privacy"}
+                className="px-4 py-2 rounded-lg bg-slate-700 font-semibold disabled:opacity-50"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Skins */}

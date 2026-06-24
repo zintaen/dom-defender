@@ -16,6 +16,8 @@ export async function GET() {
     return NextResponse.json({
       username: u.username,
       email: u.email,
+      profilePublic: u.profilePublic !== false,
+      displayName: u.displayName ?? null,
       selectedSkin: u.selectedSkin,
       unlockedSkins: u.unlockedSkins,
       unlockedAchievements: u.unlockedAchievements,
@@ -55,8 +57,23 @@ export async function PATCH(req: Request) {
       }
       u.selectedSkin = body.selectedSkin;
     }
+
+    // Public profile controls (FR-DD-COMM-001).
+    if (typeof body.profilePublic === "boolean") {
+      u.profilePublic = body.profilePublic;
+    }
+    if (typeof body.displayName === "string") {
+      const dn = body.displayName.trim().slice(0, 32);
+      u.displayName = dn.length > 0 ? dn : undefined;
+    }
+
     await u.save();
-    return NextResponse.json({ ok: true, selectedSkin: u.selectedSkin });
+    return NextResponse.json({
+      ok: true,
+      selectedSkin: u.selectedSkin,
+      profilePublic: u.profilePublic,
+      displayName: u.displayName ?? null,
+    });
   } catch (e) {
     console.error("[profile PATCH]", e);
     return NextResponse.json({ error: "Server error." }, { status: 500 });

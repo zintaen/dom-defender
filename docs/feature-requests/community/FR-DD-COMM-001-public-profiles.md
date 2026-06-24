@@ -3,7 +3,7 @@ id: FR-DD-COMM-001
 title: "Public player profiles at /u/[username]"
 lane: COMM
 priority: MUST
-status: proposed
+status: scaffolded
 verify: T
 phase: P1
 milestone: P1 - retention slice 1
@@ -71,3 +71,33 @@ projection omits the player.
 No hard dependency, but it is the prerequisite for FR-DD-COMM-002 (friends), -003 (guilds),
 -004 (replay reactions), and FR-DD-SOC-004 (referrals). Build it early in P1. Reuses the
 data already on `User`, `Score`, and `Replay`; the main new surface is the safe projection.
+
+## Section 8 - implementation status (2026-06-24, scaffolded)
+
+Built and unit-tested (9 tests green):
+- lib/profile/publicProfile.ts: projectPublicProfile (field-by-field projection - constructs only
+  safe display fields so email / passwordHash / internal id can never leak even from a full
+  document), isProfilePublic (opt-out: public unless profilePublic is explicitly false),
+  normalizeUsername, isValidUsernameParam. tests/public-profile.test.ts asserts the PII guard,
+  the safe fields, the opt-out default, and the username helpers.
+
+Server + UI (build-verified on the next-16 branch, not in the sandbox):
+- models/User.ts: added profilePublic (default true) + optional displayName (max 32).
+- app/api/profile/[username]/route.ts: public projection GET. Case-insensitive username lookup;
+  unknown -> clean 404; private -> { private: true } with no player data; public -> projection
+  plus best endless, best daily (from Score), and the 5 most recent replays (from Replay).
+- app/u/[username]/page.tsx: read-only profile (stats, best runs, achievement count, recent
+  replays linking to /replay/[id]); private state; 404 via notFound. generateMetadata emits the
+  og:image - this also closes the FR-DD-SOC-002 profile-OG deferral, reusing buildOgQuery +
+  /api/og.
+- app/api/profile/route.ts: PATCH extended to accept profilePublic + displayName; GET now returns
+  them so the account page can show current state.
+- app/account/page.tsx: "Public profile" section with the visibility toggle (the opt-out, which
+  must ship with default-public) and a display-name field.
+
+Follow-ups:
+- Make profiles discoverable by linking usernames on the leaderboard and tournament boards to
+  /u/[username] (small, build-safe; left out to keep this slice within its envelope).
+- COMM-002 (friends), -004 (reactions) now have their anchor and can build on this projection.
+- Verification is sandbox-limited to the pure projection core; tsc/lint/build on the next-16
+  branch is the real gate for the model, the two route changes, the page, and the account edit.

@@ -17,8 +17,8 @@ meaningless on a fakeable leaderboard.
 
 | ID | Pri | Phase | Status | Title | Depends on |
 | --- | --- | --- | --- | --- | --- |
-| FR-DD-COMM-001 | MUST | P1 | spec written | Public player profiles at /u/[username] | - |
-| FR-DD-COMM-002 | SHOULD | P1 | spec written | Friends / follow + a following feed | FR-DD-COMM-001 |
+| FR-DD-COMM-001 | MUST | P1 | scaffolded (projection core + tests; profilePublic+displayName on User; /api/profile/[username]; /u/[username] page w/ OG; account opt-out toggle). Unblocks COMM-002/004 + closes SOC-002 profile OG | Public player profiles at /u/[username] | - |
+| FR-DD-COMM-002 | SHOULD | P1 | scaffolded (follow core + tests; Follow edge model; /api/follow idempotent + /api/feed public-only; feed page; FollowButton; board username links) | Friends / follow + a following feed | FR-DD-COMM-001 |
 | FR-DD-COMM-003 | COULD | P2 | OPEN | Guilds / teams with a team leaderboard | FR-DD-COMM-001, FR-DD-COMM-002 |
 | FR-DD-COMM-004 | SHOULD | P1 | spec written | Reactions + comments on shared replays | FR-DD-COMM-001, NFR-DOM-007 |
 
@@ -26,17 +26,17 @@ meaningless on a fakeable leaderboard.
 
 | ID | Pri | Phase | Status | Title | Depends on |
 | --- | --- | --- | --- | --- | --- |
-| FR-DD-SOC-001 | MUST | P1 | spec written | Friend challenge links (beat-my-seed) | NFR-DOM-001 |
-| FR-DD-SOC-002 | MUST | P1 | spec written | Share cards v2 + per-run OG images for link unfurls | FR-DD-SOC-001 |
-| FR-DD-SOC-003 | SHOULD | P1 | spec written | Weekly tournament with its own seed + ranked board | NFR-DOM-001 |
+| FR-DD-SOC-001 | MUST | P1 | built (codec + tests + challenge page + create button + /play wiring) | Friend challenge links (beat-my-seed) | NFR-DOM-001 |
+| FR-DD-SOC-002 | MUST | P1 | scaffolded (OG param sanitizer + tests; /api/og ImageResponse; runCard layout; og:image meta on challenge + replay + profile). Profile OG wired with COMM-001 | Share cards v2 + per-run OG images for link unfurls | FR-DD-SOC-001 |
+| FR-DD-SOC-003 | SHOULD | P1 | scaffolded (tournament core + tests; /api/tournament; tournament page; scores accepts mode tournament w/ server seed + replay-seed binding; Nav). HUD badge cosmetic follow-up | Weekly tournament with its own seed + ranked board | NFR-DOM-001 |
 | FR-DD-SOC-004 | COULD | P2 | OPEN | Referral rewards (coins for inviting a player who plays) | FR-DD-COMM-001 |
 
 ## Lane: AI (AI)
 
 | ID | Pri | Phase | Status | Title | Depends on |
 | --- | --- | --- | --- | --- | --- |
-| FR-DD-AI-001 | MUST | P1 | spec written | Adaptive bug director (endless only; daily stays deterministic) | - |
-| FR-DD-AI-002 | SHOULD | P1 | spec written | AI replay coach: review a run, suggest 3 concrete improvements | FR-DD-AI-001 |
+| FR-DD-AI-001 | MUST | P1 | core built + tested; Game.tsx wiring pending | Adaptive bug director (endless only; daily stays deterministic) | - |
+| FR-DD-AI-002 | SHOULD | P1 | built (core + tests + replay-page panel) | AI replay coach: review a run, suggest 3 concrete improvements | FR-DD-AI-001 |
 | FR-DD-AI-003 | SHOULD | P2 | OPEN | AI BYO analysis: turn a real site's issues into a themed bug wave | NFR-DOM-002 |
 | FR-DD-AI-004 | COULD | P2 | OPEN | AI-written daily flavor text + boss taunts (cosmetic, cached) | - |
 
@@ -60,7 +60,7 @@ meaningless on a fakeable leaderboard.
 
 | ID | Pri | Phase | Status | Title | Depends on |
 | --- | --- | --- | --- | --- | --- |
-| FR-DD-EDU-001 | SHOULD | P1 | spec written | "DOM Defender for teams" - workshop / onboarding mode (CyberSkill funnel) | NFR-DOM-001, FR-DD-COMM-001 |
+| FR-DD-EDU-001 | SHOULD | P1 | scaffolded (room core + conceptMap + tests; Room model; /api/teams; teams + room pages). Submit path needs NFR-DOM-001 hardening | "DOM Defender for teams" - workshop / onboarding mode (CyberSkill funnel) | NFR-DOM-001, FR-DD-COMM-001 |
 
 ## Lane: live ops (OPS)
 

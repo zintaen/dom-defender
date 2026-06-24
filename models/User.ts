@@ -5,6 +5,10 @@ export interface IUser {
   username: string;
   email?: string;
   passwordHash: string;
+  // Public profile (FR-DD-COMM-001). Opt-out: public unless explicitly false.
+  // displayName is an optional friendly name shown instead of the username.
+  profilePublic: boolean;
+  displayName?: string;
   selectedSkin: string;
   unlockedSkins: string[];
   unlockedAchievements: string[];
@@ -33,6 +37,8 @@ const UserSchema = new Schema<IUser>(
     username: { type: String, required: true, unique: true, minlength: 2, maxlength: 24, index: true, trim: true },
     email: { type: String, required: false, unique: false, sparse: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true },
+    profilePublic: { type: Boolean, default: true },
+    displayName: { type: String, required: false, maxlength: 32, trim: true },
     selectedSkin: { type: String, default: "default" },
     unlockedSkins: { type: [String], default: ["default"] },
     unlockedAchievements: { type: [String], default: [] },

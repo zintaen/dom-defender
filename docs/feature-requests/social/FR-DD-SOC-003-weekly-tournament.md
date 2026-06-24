@@ -3,7 +3,7 @@ id: FR-DD-SOC-003
 title: "Weekly tournament with its own seed and ranked board"
 lane: SOC
 priority: SHOULD
-status: proposed
+status: scaffolded
 verify: T
 phase: P1
 milestone: P1 - growth slice 2
@@ -67,3 +67,36 @@ seed begins. The seed is always server-derived so no one can pre-practice a forg
 
 Depends on NFR-DOM-001 (a competitive event on a fakeable board is worse than no event). Sets
 up FR-DD-OPS-001 (seasons + rotating modifiers), which generalizes this into recurring live ops.
+
+## Section 8 - implementation status (2026-06-24, scaffolded)
+
+Built and unit-tested (8 tests green):
+- lib/game/tournament.ts: weekKey (ISO-8601 week, UTC, resolved via the week's Thursday so the
+  year is correct at boundaries), tournamentSeed (reuses seedFromDateKey, unsigned 32-bit),
+  weekStart / weekEnd / msUntilRollover. tests/tournament.test.ts proves the seed is stable
+  within a week and changes at the Monday rollover.
+
+Server + UI (build-verified on the next-16 branch, not in the sandbox):
+- models/Score.ts: mode enum and IScore union widened to include "tournament"; dailyKey holds
+  the ISO week key for tournament rows (the existing { mode, dailyKey, score } index serves the
+  weekly board).
+- app/api/scores/route.ts: accepts mode "tournament"; the week key and seed are derived
+  server-side (never from the client); a supplied replay must carry the week seed or it is
+  rejected; the run still goes through the NFR-DOM-001 replay validation, same as daily.
+- app/api/tournament/route.ts: GET returns weekKey, server seed, startsAt/endsAt, countdown,
+  and the best-per-user ranked board for the week.
+- app/tournament/page.tsx: live board, countdown to rollover, "Play this week" entry.
+- components/PlayShell.tsx: accepts mode "tournament" and maps it to the seeded "daily" core
+  path so the protected Game.tsx is untouched (seed set => director off => determinism holds);
+  the real "tournament" mode is what is submitted and shared.
+- components/Nav.tsx: Tournament entry point.
+
+Known gaps / follow-ups:
+- The Game HUD shows the "DAILY" badge during a tournament run because tournament maps onto the
+  daily core path. A later clean pass widens Game.tsx's mode union to add a real TOURNAMENT
+  badge. Cosmetic only; the score is recorded and ranked as a tournament.
+- Week rollover freeze is implicit: a closed week's rows stay queryable by their week key, but
+  there is no surfaced "winners" archive view yet. Add a read-only past-weeks board when OPS-001
+  (seasons) lands.
+- Verification is sandbox-limited to the pure core. tsc/lint/build on the next-16 branch is the
+  real gate for the route, page, model change, and PlayShell edit.

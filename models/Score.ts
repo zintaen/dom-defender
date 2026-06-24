@@ -4,8 +4,8 @@ export interface IScore {
   _id: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   username: string;          // denormalized for fast leaderboard reads
-  mode: "endless" | "daily";
-  dailyKey?: string;         // YYYY-MM-DD when mode === "daily"
+  mode: "endless" | "daily" | "tournament";
+  dailyKey?: string;         // YYYY-MM-DD for "daily"; ISO week (YYYY-Www) for "tournament"
   seed?: number;             // when set, run was played on a shared private seed
   score: number;
   durationSec: number;
@@ -22,7 +22,7 @@ const ScoreSchema = new Schema<IScore>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     username: { type: String, required: true },
-    mode: { type: String, enum: ["endless", "daily"], required: true, index: true },
+    mode: { type: String, enum: ["endless", "daily", "tournament"], required: true, index: true },
     dailyKey: { type: String, required: false, index: true },
     seed: { type: Number, required: false, index: true },
     score: { type: Number, required: true, index: true },

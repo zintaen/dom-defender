@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ReplayEvent, ReplaySnapshot } from "@/lib/game/replay";
+import { coachRun } from "@/lib/game/coach";
 
 // Timeline chart dimensions. Module-level constants so the hooks below do not
 // need to list them as dependencies.
@@ -103,6 +104,27 @@ export default function ReplayPlayer({ replay }: { replay: ReplayPayload }) {
   const scorePath = useMemo(() => pathFrom(replay.snapshots, (s) => [xScale(s.t), yScoreScale(s.score)]), [replay.snapshots, xScale, yScoreScale]);
   const crashPath = useMemo(() => pathFrom(replay.snapshots, (s) => [xScale(s.t), yCrashScale(s.crash)]), [replay.snapshots, xScale, yCrashScale]);
 
+  // AI coach tips for this run (FR-DD-AI-002), derived deterministically from the replay.
+  const coachTips = useMemo(
+    () =>
+      coachRun({
+        mode: replay.mode,
+        skinId: replay.skinId,
+        startedAt: 0,
+        durationSec: replay.durationSec,
+        events: replay.events,
+        snapshots: replay.snapshots,
+        summary: {
+          score: replay.score,
+          wave: replay.wave,
+          bugsFixed: replay.bugsFixed,
+          bossesDefeated: replay.bossesDefeated,
+          maxCombo: replay.maxCombo,
+        },
+      } as any),
+    [replay]
+  );
+
   // Event markers for the timeline (waves, boss events, power-ups)
   const markers = replay.events.filter((e) =>
     e.type === "wave" || e.type === "boss_spawn" || e.type === "boss_down" || e.type === "powerup"
@@ -169,6 +191,22 @@ export default function ReplayPlayer({ replay }: { replay: ReplayPayload }) {
             <Stat label="Bosses" value={String(replay.bossesDefeated)} color="text-orange-300" />
             <Stat label="Best Combo" value={`x${replay.maxCombo}`} color="text-pink-300" />
           </div>
+
+          {/* AI coach (FR-DD-AI-002) */}
+          {coachTips.length > 0 && (
+            <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-4 mb-4">
+              <div className="text-xs uppercase tracking-widest text-cyan-300 mb-2">Coach</div>
+              <ul className="space-y-3">
+                {coachTips.map((tip, i) => (
+                  <li key={i}>
+                    <div className="font-semibold text-slate-100">{tip.title}</div>
+                    <div className="text-sm text-slate-300">{tip.detail}</div>
+                    <div className="text-xs text-slate-500 mt-0.5">{tip.evidence}</div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Timeline chart */}
           <div className="rounded-xl bg-slate-950 border border-slate-800 p-3 mb-4">

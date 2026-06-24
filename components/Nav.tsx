@@ -27,7 +27,9 @@ export default function Nav() {
         <div className="hidden md:flex items-center gap-1 text-sm">
           <NavLink href="/play" label="Play" current={pathname} />
           <NavLink href="/daily" label="Daily" current={pathname} />
+          <NavLink href="/tournament" label="Tournament" current={pathname} />
           <NavLink href="/leaderboard" label="Leaderboard" current={pathname} />
+          {session && <NavLink href="/feed" label="Feed" current={pathname} />}
           <NavLink href="/achievements" label="Achievements" current={pathname} />
           <NavLink href="/shop" label="Shop" current={pathname} />
           <NavLink href="/pro" label="Pro" current={pathname} />

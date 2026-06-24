@@ -11,7 +11,9 @@ export interface ProWaitlistEntry {
 
 const ProWaitlistSchema = new Schema<ProWaitlistEntry>(
   {
-    email: { type: String, required: true, lowercase: true, trim: true, index: true },
+    // The unique index is declared once below (schema.index). Do not also set
+    // index:true here or Mongoose warns about a duplicate index.
+    email: { type: String, required: true, lowercase: true, trim: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", index: true },
     username: { type: String },
     source: { type: String, default: "pro_page" },

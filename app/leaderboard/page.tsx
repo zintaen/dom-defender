@@ -194,7 +194,11 @@ function LeaderboardPage() {
                   <td className="px-4 py-3 font-mono text-slate-500">
                     {r.rank === 1 ? "🥇" : r.rank === 2 ? "🥈" : r.rank === 3 ? "🥉" : r.rank}
                   </td>
-                  <td className="px-4 py-3 font-semibold">{r.username}</td>
+                  <td className="px-4 py-3 font-semibold">
+                    <Link href={`/u/${r.username}`} className="hover:text-cyan-300 hover:underline">
+                      {r.username}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 text-right font-mono font-bold text-cyan-300">
                     {r.score.toLocaleString()}
                   </td>
