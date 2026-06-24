@@ -12,8 +12,7 @@
 // /api/pro-waitlist so we know who to ping when we flip the flag.
 
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 
@@ -45,7 +44,7 @@ export async function requirePro(): Promise<
   | { response: NextResponse; user?: undefined }
   | { response?: undefined; user: any }
 > {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (!session?.user) {
     return { response: NextResponse.json({ error: "Not signed in." }, { status: 401 }) };
   }

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { getCosmetic, isCoinPurchasable, hasPrerequisites, isUsdPurchasable } from "@/lib/game/cosmetics";
@@ -16,7 +15,7 @@ export const dynamic = "force-dynamic";
 //   we return 503 and the UI points users to the waitlist.
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Not signed in." }, { status: 401 });
     }

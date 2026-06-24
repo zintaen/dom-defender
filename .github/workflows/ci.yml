@@ -35,10 +35,12 @@ jobs:
       - name: Production build
         run: npm run build
         env:
-          # The build does not connect to a real database. These keep next-auth and
+          # The build does not connect to a real database. These keep Auth.js and
           # the build calm in CI; they are not real secrets and grant no access.
+          # Auth.js v5 reads AUTH_SECRET (NEXTAUTH_SECRET kept for back-compat).
+          AUTH_SECRET: ci-build-placeholder-not-a-secret
           NEXTAUTH_SECRET: ci-build-placeholder-not-a-secret
-          NEXTAUTH_URL: http://localhost:3000
+          AUTH_TRUST_HOST: "true"
 
       # Bundle size budget (NFR-DOM-006). Calibrate the limit in .size-limit.json
       # from the first real build before treating a failure as blocking.

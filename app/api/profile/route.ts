@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { SKINS } from "@/lib/game/skins";
@@ -9,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
     await connectDB();
     const u = await User.findById((session.user as any).id).lean();
@@ -41,7 +40,7 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     if (!session?.user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
     const body = await req.json();
     await connectDB();

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createHash } from "crypto";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { connectDB } from "@/lib/mongodb";
 import ByoAttempt from "@/models/ByoAttempt";
 import { validateByoUrl } from "@/lib/game/byoValidator";
@@ -70,7 +69,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const userId = session?.user ? (session.user as any).id : undefined;
 
     await ByoAttempt.create({

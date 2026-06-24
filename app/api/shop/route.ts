@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { COSMETICS } from "@/lib/game/cosmetics";
@@ -12,7 +11,7 @@ export const dynamic = "force-dynamic";
 // + their coin balance (if signed in) + feature-flag state.
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     let owned: string[] = [];
     let coins = 0;
     let isPro = false;

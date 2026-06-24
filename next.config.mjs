@@ -30,10 +30,9 @@ const securityHeaders = [
 
 const nextConfig = {
   reactStrictMode: true,
-  experimental: {
-    // mongoose uses node-only APIs, mark it external for the server bundle
-    serverComponentsExternalPackages: ["mongoose"],
-  },
+  // mongoose uses node-only APIs, mark it external for the server bundle.
+  // Renamed from experimental.serverComponentsExternalPackages in Next 15+.
+  serverExternalPackages: ["mongoose"],
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

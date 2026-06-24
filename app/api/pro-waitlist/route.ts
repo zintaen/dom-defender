@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { connectDB } from "@/lib/mongodb";
 import ProWaitlist from "@/models/ProWaitlist";
 
@@ -22,7 +21,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Enter a valid email." }, { status: 400 });
     }
 
-    const session = await getServerSession(authOptions);
+    const session = await auth();
     const userId = session?.user ? (session.user as any).id : undefined;
     const username = session?.user ? ((session.user as any).username as string | undefined) : undefined;
 
