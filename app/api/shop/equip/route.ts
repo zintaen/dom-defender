@@ -1,60 +1,52 @@
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { connectDB } from "@/lib/mongodb";
-import User from "@/models/User";
+import { db } from "@/lib/db";
+import { users } from "@/db/schema";
 import { getCosmetic } from "@/lib/game/cosmetics";
 
 export const dynamic = "force-dynamic";
 
-// POST /api/shop/equip { cosmeticId, slot: "trail" | "title" | "badge" | "sfxPack" }
-// Sets the given slot to the given cosmetic (must be owned). Pass cosmeticId
-// as null/empty string to clear the slot.
+type Slot = "trail" | "title" | "badge" | "sfxPack";
+const SLOT_COLUMN: Record<Slot, "selectedTrail" | "selectedTitle" | "selectedBadge" | "selectedSfxPack"> = {
+  trail: "selectedTrail",
+  title: "selectedTitle",
+  badge: "selectedBadge",
+  sfxPack: "selectedSfxPack",
+};
+
+// POST /api/shop/equip { cosmeticId, slot }. Pass cosmeticId null/empty to clear.
 export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user) {
       return NextResponse.json({ error: "Not signed in." }, { status: 401 });
     }
+    const userId = (session.user as { id: string }).id;
 
     const body = await req.json().catch(() => ({}));
     const rawId: string | null = typeof body?.cosmeticId === "string" ? body.cosmeticId : null;
-    const slot: "trail" | "title" | "badge" | "sfxPack" = body?.slot;
+    const slot: Slot = body?.slot;
     if (!["trail", "title", "badge", "sfxPack"].includes(slot)) {
       return NextResponse.json({ error: "Unknown slot." }, { status: 400 });
     }
 
-    await connectDB();
-    const user = await User.findById((session.user as any).id);
+    const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const user = rows[0];
     if (!user) return NextResponse.json({ error: "User missing." }, { status: 404 });
 
-    // Empty string -> clear the slot.
+    // Empty -> clear the slot.
     if (!rawId) {
-      switch (slot) {
-        case "trail":
-          user.selectedTrail = undefined;
-          break;
-        case "title":
-          user.selectedTitle = undefined;
-          break;
-        case "badge":
-          user.selectedBadge = undefined;
-          break;
-        case "sfxPack":
-          user.selectedSfxPack = undefined;
-          break;
-      }
-      await user.save();
+      await db.update(users).set({ [SLOT_COLUMN[slot]]: null }).where(eq(users.id, userId));
       return NextResponse.json({ ok: true, cleared: true });
     }
 
     const cosmetic = getCosmetic(rawId);
     if (!cosmetic) return NextResponse.json({ error: "Unknown cosmetic." }, { status: 400 });
 
-    // Check ownership.
     if (!user.ownedCosmetics.includes(cosmetic.id)) {
       return NextResponse.json({ error: "You don't own that cosmetic." }, { status: 403 });
     }
-    // Category must match slot.
     const expectedCategory = slot === "sfxPack" ? "sfx_pack" : slot;
     if (cosmetic.category !== expectedCategory) {
       return NextResponse.json(
@@ -63,31 +55,19 @@ export async function POST(req: Request) {
       );
     }
 
-    switch (slot) {
-      case "trail":
-        user.selectedTrail = cosmetic.id;
-        break;
-      case "title":
-        user.selectedTitle = cosmetic.id;
-        break;
-      case "badge":
-        user.selectedBadge = cosmetic.id;
-        break;
-      case "sfxPack":
-        user.selectedSfxPack = cosmetic.id;
-        break;
-    }
-    await user.save();
+    await db.update(users).set({ [SLOT_COLUMN[slot]]: cosmetic.id }).where(eq(users.id, userId));
 
+    const after = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const u = after[0]!;
     return NextResponse.json({
       ok: true,
       slot,
       cosmeticId: cosmetic.id,
       selected: {
-        trail: user.selectedTrail,
-        title: user.selectedTitle,
-        badge: user.selectedBadge,
-        sfxPack: user.selectedSfxPack,
+        trail: u.selectedTrail,
+        title: u.selectedTitle,
+        badge: u.selectedBadge,
+        sfxPack: u.selectedSfxPack,
       },
     });
   } catch (e) {

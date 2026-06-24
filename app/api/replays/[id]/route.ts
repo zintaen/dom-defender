@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import Replay from "@/models/Replay";
+import { eq } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { replays } from "@/db/schema";
 import { isValidShortId } from "@/lib/game/replay";
 
 export const dynamic = "force-dynamic";
@@ -12,8 +13,8 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "Invalid replay id." }, { status: 400 });
     }
 
-    await connectDB();
-    const r = await Replay.findOne({ shortId: id }).lean();
+    const rows = await db.select().from(replays).where(eq(replays.shortId, id)).limit(1);
+    const r = rows[0];
     if (!r) return NextResponse.json({ error: "Replay not found." }, { status: 404 });
 
     return NextResponse.json({

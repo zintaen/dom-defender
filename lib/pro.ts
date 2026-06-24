@@ -12,9 +12,10 @@
 // /api/pro-waitlist so we know who to ping when we flip the flag.
 
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { connectDB } from "@/lib/mongodb";
-import User from "@/models/User";
+import { db } from "@/lib/db";
+import { users } from "@/db/schema";
 
 export function isProBillingEnabled(): boolean {
   return process.env.PRO_BILLING_ENABLED === "true" || process.env.PRO_BILLING_ENABLED === "1";
@@ -56,8 +57,8 @@ export async function requirePro(): Promise<
       ),
     };
   }
-  await connectDB();
-  const u = await User.findById((session.user as any).id);
+  const rows = await db.select().from(users).where(eq(users.id, (session.user as any).id)).limit(1);
+  const u = rows[0];
   if (!u) {
     return { response: NextResponse.json({ error: "User missing." }, { status: 404 }) };
   }

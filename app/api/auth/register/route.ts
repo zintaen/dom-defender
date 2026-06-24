@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createHash } from "crypto";
-import { connectDB } from "@/lib/mongodb";
-import User from "@/models/User";
-import AuthAttempt from "@/models/AuthAttempt";
+import { and, eq, gte, count } from "drizzle-orm";
+import { db } from "@/lib/db";
+import { users, authAttempts } from "@/db/schema";
 import { clientIpFromHeaders } from "@/lib/rateLimit";
 import { reportError } from "@/lib/observability";
 
@@ -30,10 +30,8 @@ export async function POST(req: Request) {
       "11111111", "iloveyou", "abc12345", "football", "letmein1",
     ]);
     if (COMMON_PASSWORDS.has(password.toLowerCase())) {
-      return NextResponse.json({ error: "That password is too common — please choose another." }, { status: 400 });
+      return NextResponse.json({ error: "That password is too common - please choose another." }, { status: 400 });
     }
-
-    await connectDB();
 
     // Per-IP registration throttle (NFR-DOM-003 / L1-T3): cap new accounts per
     // network per hour to stop account-creation spam.
@@ -43,23 +41,33 @@ export async function POST(req: Request) {
     const ipHash = createHash("sha256").update(`register:${ip}`).digest("hex").slice(0, 16);
     const REG_WINDOW_MS = 60 * 60 * 1000;
     const REG_MAX = 10;
-    const recentRegs = await AuthAttempt.countDocuments({
-      ipHash,
-      kind: "register",
-      createdAt: { $gte: new Date(Date.now() - REG_WINDOW_MS) },
-    });
-    if (recentRegs >= REG_MAX) {
+    const since = new Date(Date.now() - REG_WINDOW_MS);
+    const [{ n }] = await db
+      .select({ n: count() })
+      .from(authAttempts)
+      .where(
+        and(
+          eq(authAttempts.ipHash, ipHash),
+          eq(authAttempts.kind, "register"),
+          gte(authAttempts.createdAt, since)
+        )
+      );
+    if ((n ?? 0) >= REG_MAX) {
       return NextResponse.json({ error: "Too many sign-ups from this network. Try again later." }, { status: 429 });
     }
-    await AuthAttempt.create({ ipHash, kind: "register" });
+    await db.insert(authAttempts).values({ ipHash, kind: "register" });
 
-    const exists = await User.findOne({ username });
-    if (exists) return NextResponse.json({ error: "Username taken." }, { status: 409 });
+    const existing = await db.select({ id: users.id }).from(users).where(eq(users.username, username)).limit(1);
+    if (existing.length > 0) return NextResponse.json({ error: "Username taken." }, { status: 409 });
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const u = await User.create({ username, email, passwordHash });
+    const inserted = await db
+      .insert(users)
+      .values({ username, email: email ?? null, passwordHash })
+      .returning({ id: users.id, username: users.username });
+    const u = inserted[0];
 
-    return NextResponse.json({ ok: true, userId: String(u._id), username: u.username });
+    return NextResponse.json({ ok: true, userId: u.id, username: u.username });
   } catch (e: any) {
     await reportError(e, { route: "POST /api/auth/register" });
     return NextResponse.json({ error: "Server error." }, { status: 500 });

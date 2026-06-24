@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { connectDB } from "@/lib/mongodb";
-import User from "@/models/User";
+import { db } from "@/lib/db";
+import { users } from "@/db/schema";
 import { SKINS } from "@/lib/game/skins";
 
 export const dynamic = "force-dynamic";
@@ -10,13 +11,14 @@ export async function GET() {
   try {
     const session = await auth();
     if (!session?.user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
-    await connectDB();
-    const u = await User.findById((session.user as any).id).lean();
+    const userId = (session.user as { id: string }).id;
+    const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const u = rows[0];
     if (!u) return NextResponse.json({ error: "User missing." }, { status: 404 });
     return NextResponse.json({
       username: u.username,
       email: u.email,
-      profilePublic: u.profilePublic !== false,
+      profilePublic: u.profilePublic,
       displayName: u.displayName ?? null,
       selectedSkin: u.selectedSkin,
       unlockedSkins: u.unlockedSkins,
@@ -44,10 +46,14 @@ export async function PATCH(req: Request) {
   try {
     const session = await auth();
     if (!session?.user) return NextResponse.json({ error: "Not signed in." }, { status: 401 });
+    const userId = (session.user as { id: string }).id;
     const body = await req.json();
-    await connectDB();
-    const u = await User.findById((session.user as any).id);
+
+    const rows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const u = rows[0];
     if (!u) return NextResponse.json({ error: "User missing." }, { status: 404 });
+
+    const updates: Partial<typeof users.$inferInsert> = {};
 
     if (typeof body.selectedSkin === "string") {
       const ok = SKINS.find((s) => s.id === body.selectedSkin);
@@ -55,24 +61,25 @@ export async function PATCH(req: Request) {
       if (!u.unlockedSkins.includes(body.selectedSkin)) {
         return NextResponse.json({ error: "Skin not unlocked." }, { status: 403 });
       }
-      u.selectedSkin = body.selectedSkin;
+      updates.selectedSkin = body.selectedSkin;
     }
-
-    // Public profile controls (FR-DD-COMM-001).
     if (typeof body.profilePublic === "boolean") {
-      u.profilePublic = body.profilePublic;
+      updates.profilePublic = body.profilePublic;
     }
     if (typeof body.displayName === "string") {
       const dn = body.displayName.trim().slice(0, 32);
-      u.displayName = dn.length > 0 ? dn : undefined;
+      updates.displayName = dn.length > 0 ? dn : null;
     }
 
-    await u.save();
+    if (Object.keys(updates).length > 0) {
+      await db.update(users).set(updates).where(eq(users.id, userId));
+    }
+
     return NextResponse.json({
       ok: true,
-      selectedSkin: u.selectedSkin,
-      profilePublic: u.profilePublic,
-      displayName: u.displayName ?? null,
+      selectedSkin: updates.selectedSkin ?? u.selectedSkin,
+      profilePublic: updates.profilePublic ?? u.profilePublic,
+      displayName: (updates.displayName !== undefined ? updates.displayName : u.displayName) ?? null,
     });
   } catch (e) {
     console.error("[profile PATCH]", e);

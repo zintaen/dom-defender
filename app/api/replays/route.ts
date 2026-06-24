@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { connectDB } from "@/lib/mongodb";
-import Replay from "@/models/Replay";
+import { db } from "@/lib/db";
+import { replays } from "@/db/schema";
 import {
   makeShortId,
   REPLAY_MAX_EVENTS,
@@ -40,54 +41,52 @@ export async function POST(req: Request) {
     const bossesDefeated = clampInt(summary.bossesDefeated, 0, 100);
     const maxCombo = clampInt(summary.maxCombo, 0, 1000);
 
-    // Reasonable size caps — matches client-side limits in lib/game/replay.ts.
+    // Size caps - match the client limits in lib/game/replay.ts.
     const events = Array.isArray(body.events)
       ? body.events
           .slice(0, REPLAY_MAX_EVENTS)
           .filter((e: any) => e && typeof e === "object" && ALLOWED_EVENT_TYPES.has(e.type))
       : [];
     const snapshots = Array.isArray(body.snapshots)
-      ? body.snapshots
-          .slice(0, REPLAY_MAX_SNAPSHOTS)
-          .filter((s: any) => s && typeof s.t === "number")
+      ? body.snapshots.slice(0, REPLAY_MAX_SNAPSHOTS).filter((s: any) => s && typeof s.t === "number")
       : [];
 
-    await connectDB();
+    const userId = (session.user as { id?: string }).id ?? null;
+    const username = (session.user as { username?: string }).username ?? null;
 
-    const userId = (session.user as any).id;
-    const username = (session.user as any).username as string | undefined;
-
-    // Collision chance at 10 chars from 32-char alphabet is astronomical,
-    // but retry a few times just in case to avoid a loud 500.
+    // Collision chance is astronomical, but retry a few times to avoid a 500.
     let shortId = makeShortId();
     for (let i = 0; i < 4; i++) {
-      const exists = await Replay.exists({ shortId });
-      if (!exists) break;
+      const exists = await db.select({ id: replays.id }).from(replays).where(eq(replays.shortId, shortId)).limit(1);
+      if (exists.length === 0) break;
       shortId = makeShortId();
     }
 
-    const doc = await Replay.create({
-      shortId,
-      userId,
-      username,
-      mode,
-      seed: typeof body.seed === "number" ? body.seed : undefined,
-      dailyKey: typeof body.dailyKey === "string" ? body.dailyKey : undefined,
-      skinId: typeof body.skinId === "string" ? body.skinId : "default",
-      durationSec,
-      score,
-      wave,
-      bugsFixed,
-      bossesDefeated,
-      maxCombo,
-      events,
-      snapshots,
-    });
+    const inserted = await db
+      .insert(replays)
+      .values({
+        shortId,
+        userId,
+        username,
+        mode,
+        seed: typeof body.seed === "number" ? body.seed : null,
+        dailyKey: typeof body.dailyKey === "string" ? body.dailyKey : null,
+        skinId: typeof body.skinId === "string" ? body.skinId : "default",
+        durationSec,
+        score,
+        wave,
+        bugsFixed,
+        bossesDefeated,
+        maxCombo,
+        events,
+        snapshots,
+      })
+      .returning({ shortId: replays.shortId });
 
     return NextResponse.json({
       ok: true,
-      shortId: doc.shortId,
-      url: `/replay/${doc.shortId}`,
+      shortId: inserted[0].shortId,
+      url: `/replay/${inserted[0].shortId}`,
     });
   } catch (e: any) {
     console.error("[replays POST]", e);

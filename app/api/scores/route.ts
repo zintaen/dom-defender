@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
+import { and, eq, gte, count } from "drizzle-orm";
 import { auth } from "@/auth";
-import { connectDB } from "@/lib/mongodb";
-import User from "@/models/User";
-import Score from "@/models/Score";
+import { db } from "@/lib/db";
+import { users, scores } from "@/db/schema";
 import { evaluateAchievements, totalCoinsForAchievements, RunSummary } from "@/lib/game/achievements";
 import { todaysDailyKey, seedFromDateKey } from "@/lib/game/dailySeed";
 import { weekKey, tournamentSeed } from "@/lib/game/tournament";
@@ -31,15 +31,12 @@ export async function POST(req: Request) {
       skinUsed: typeof body.skinUsed === "string" ? body.skinUsed : "default",
     };
 
-    // Light sanity check — at most ~100 score per second on average
+    // Light sanity check - at most ~100 score per second on average
     if (summary.score > Math.max(500, summary.durationSec * 200)) {
       return NextResponse.json({ error: "Score failed sanity check." }, { status: 400 });
     }
 
     // Server-authoritative validation against the recorded replay (NFR-DOM-001).
-    // When a replay is supplied we validate the claimed run against it and mark
-    // the score verified. REQUIRE_VERIFIED_SCORES=true makes the replay mandatory
-    // (fail closed) once the client is confirmed sending it.
     const replay =
       body.replay && typeof body.replay === "object" ? (body.replay as ReplayLog) : undefined;
     const requireVerified = process.env.REQUIRE_VERIFIED_SCORES === "true";
@@ -60,20 +57,17 @@ export async function POST(req: Request) {
       );
     }
 
-    await connectDB();
+    const userId = (session.user as { id: string }).id;
+    const username = (session.user as { username: string }).username;
 
-    const userId = (session.user as any).id;
-    const username = (session.user as any).username as string;
-
-    // Per-user submission rate limit (L1-T7): cap ranked submissions per minute
-    // so the collection cannot be flooded. Durable (counts stored Score docs).
+    // Per-user submission rate limit (L1-T7): cap ranked submissions per minute.
     const SUBMIT_WINDOW_MS = 60 * 1000;
     const SUBMIT_MAX = 20;
-    const recentSubmissions = await Score.countDocuments({
-      userId,
-      createdAt: { $gte: new Date(Date.now() - SUBMIT_WINDOW_MS) },
-    });
-    if (recentSubmissions >= SUBMIT_MAX) {
+    const [{ n: recentSubmissions }] = await db
+      .select({ n: count() })
+      .from(scores)
+      .where(and(eq(scores.userId, userId), gte(scores.createdAt, new Date(Date.now() - SUBMIT_WINDOW_MS))));
+    if ((recentSubmissions ?? 0) >= SUBMIT_MAX) {
       return NextResponse.json(
         { error: "Too many submissions in a short time - slow down and try again shortly." },
         { status: 429 }
@@ -81,9 +75,8 @@ export async function POST(req: Request) {
     }
 
     // Competitive buckets are derived server-side so a client cannot submit
-    // under a forged seed. Daily uses the date key (L1-T8); the weekly
-    // tournament uses the ISO-week key (FR-DD-SOC-003). Endless / private-seed
-    // runs keep their client-supplied seed.
+    // under a forged seed. Daily uses the date key (L1-T8); the weekly tournament
+    // uses the ISO-week key (FR-DD-SOC-003). Endless keeps its client seed.
     let dailyKey: string | undefined;
     let seed: number | undefined;
     if (mode === "daily") {
@@ -99,9 +92,7 @@ export async function POST(req: Request) {
           : undefined;
     }
 
-    // Bind a tournament run to this week's seed: if the replay carries a seed it
-    // must be the server's week seed, so a run recorded on a different (or
-    // forged) seed cannot be parked on the tournament board.
+    // Bind a tournament run to this week's seed.
     if (
       mode === "tournament" &&
       replay &&
@@ -115,46 +106,54 @@ export async function POST(req: Request) {
       );
     }
 
-    const score = await Score.create({
-      userId,
-      username,
-      mode,
-      dailyKey,
-      seed,
-      score: summary.score,
-      durationSec: summary.durationSec,
-      wave: summary.wave,
-      bugsFixed: summary.bugsFixed,
-      bossesDefeated: summary.bossesDefeated,
-      maxCombo: summary.maxCombo,
-      skinUsed: summary.skinUsed,
-      verified,
-    });
+    const inserted = await db
+      .insert(scores)
+      .values({
+        userId,
+        username,
+        mode,
+        dailyKey: dailyKey ?? null,
+        seed: seed ?? null,
+        score: summary.score,
+        durationSec: summary.durationSec,
+        wave: summary.wave,
+        bugsFixed: summary.bugsFixed,
+        bossesDefeated: summary.bossesDefeated,
+        maxCombo: summary.maxCombo,
+        skinUsed: summary.skinUsed,
+        verified,
+      })
+      .returning({ id: scores.id });
 
-    // Update user aggregates and evaluate achievements
-    const u = await User.findById(userId);
+    // Update user aggregates and evaluate achievements (read-modify-write, same
+    // as before; the only atomic path is the shop coin spend).
+    const urows = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+    const u = urows[0];
     if (!u) return NextResponse.json({ error: "User missing." }, { status: 404 });
-
-    u.totalRuns += 1;
-    u.totalBugsFixed += summary.bugsFixed;
-    if (summary.score > u.highScore) u.highScore = summary.score;
-    if (summary.durationSec > u.longestRunSeconds) u.longestRunSeconds = summary.durationSec;
 
     const newlyUnlocked = evaluateAchievements(summary, u.unlockedAchievements);
     const newAchievementIds = newlyUnlocked.map((a) => a.id);
-    u.unlockedAchievements = Array.from(new Set([...u.unlockedAchievements, ...newAchievementIds]));
-
+    const mergedAchievements = Array.from(new Set([...u.unlockedAchievements, ...newAchievementIds]));
     const skinsToUnlock = newlyUnlocked.filter((a) => a.unlocksSkin).map((a) => a.unlocksSkin!) as string[];
-    u.unlockedSkins = Array.from(new Set([...u.unlockedSkins, ...skinsToUnlock]));
-
+    const mergedSkins = Array.from(new Set([...u.unlockedSkins, ...skinsToUnlock]));
     const coinsEarned = totalCoinsForAchievements(newAchievementIds);
-    u.totalCoins += coinsEarned;
 
-    await u.save();
+    await db
+      .update(users)
+      .set({
+        totalRuns: u.totalRuns + 1,
+        totalBugsFixed: u.totalBugsFixed + summary.bugsFixed,
+        highScore: summary.score > u.highScore ? summary.score : u.highScore,
+        longestRunSeconds: summary.durationSec > u.longestRunSeconds ? summary.durationSec : u.longestRunSeconds,
+        unlockedAchievements: mergedAchievements,
+        unlockedSkins: mergedSkins,
+        totalCoins: u.totalCoins + coinsEarned,
+      })
+      .where(eq(users.id, userId));
 
     return NextResponse.json({
       ok: true,
-      scoreId: String(score._id),
+      scoreId: inserted[0].id,
       newAchievements: newlyUnlocked.map((a) => ({ id: a.id, name: a.name, icon: a.icon, rewardCoins: a.rewardCoins })),
       coinsEarned,
       unlockedSkins: skinsToUnlock,
