@@ -758,6 +758,7 @@ export function Game({ mode, skin, initialSeed, dailyKey, onRunEnd, onReplayRead
           tickNow={tickNow}
           onActivate={tryActivatePowerUp}
           danger={danger}
+          onEndRun={() => setCrash(100)}
           topRightExtra={topRightExtra}
         />
       )}
@@ -799,9 +800,10 @@ function HUD(props: {
   tickNow: number;
   onActivate: (id: string) => void;
   danger: boolean;
+  onEndRun: () => void;
   topRightExtra?: React.ReactNode;
 }) {
-  const { score, crash, elapsed, wave, tool, setTool, mode, powerUpStates, activeBuffs, tickNow, onActivate, danger, topRightExtra } = props;
+  const { score, crash, elapsed, wave, tool, setTool, mode, powerUpStates, activeBuffs, tickNow, onActivate, danger, onEndRun, topRightExtra } = props;
   return (
     <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
       <div className="px-6 py-3 flex items-center justify-between gap-4 bg-slate-950/90 border-b border-slate-800 backdrop-blur-md pointer-events-auto">
@@ -839,6 +841,13 @@ function HUD(props: {
               </button>
             );
           })}
+          <button
+            onClick={onEndRun}
+            title="End this run and save your score"
+            className="px-3 py-2 rounded-lg border border-red-500/40 text-red-300 bg-red-500/10 hover:bg-red-500/20 text-sm font-semibold"
+          >
+            End run
+          </button>
           {topRightExtra}
         </div>
       </div>
