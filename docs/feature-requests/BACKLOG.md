@@ -88,3 +88,11 @@ Copy the frontmatter and section structure from any spec-written FR in this fold
 example `ai/FR-DD-AI-001-adaptive-bug-director.md`), fill the build envelope (new_files,
 modified_files, allowed_tools), write the acceptance criteria and the test plan, then run it
 through the same evidence gate as the hardening tasks.
+
+## Conventions (CyberOS)
+
+One backlog for both classes: rows are `- [status] FR-ID-slug - title`;
+`class: improvement` rows carry an `(improvement)` suffix, product rows are untagged.
+FR frontmatter `status` is the record of truth; this file is the index.
+
+- improvement programs: see `improvement/` (moved from `docs/improvement/`; class: improvement work - convert items to FRs on pickup)
