@@ -3,7 +3,7 @@ id: FR-DD-REACH-002
 title: "Internationalization: English and Vietnamese"
 lane: REACH
 priority: SHOULD
-status: proposed
+status: draft
 verify: T
 phase: P1
 milestone: P1 - reach slice 1

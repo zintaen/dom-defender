@@ -3,7 +3,7 @@ id: FR-DD-REACH-001
 title: "Mobile and touch support"
 lane: REACH
 priority: MUST
-status: proposed
+status: draft
 verify: T
 phase: P1
 milestone: P1 - reach slice 1

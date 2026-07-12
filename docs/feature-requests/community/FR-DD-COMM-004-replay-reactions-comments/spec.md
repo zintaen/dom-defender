@@ -3,7 +3,7 @@ id: FR-DD-COMM-004
 title: "Reactions and comments on shared replays"
 lane: COMM
 priority: SHOULD
-status: proposed
+status: draft
 verify: T
 phase: P1
 milestone: P1 - retention slice 2

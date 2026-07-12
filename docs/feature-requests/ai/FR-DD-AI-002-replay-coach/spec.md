@@ -3,7 +3,7 @@ id: FR-DD-AI-002
 title: "AI replay coach: three concrete tips grounded in the run"
 lane: AI
 priority: SHOULD
-status: proposed
+status: draft
 verify: T
 phase: P1
 milestone: P1 - retention slice 2

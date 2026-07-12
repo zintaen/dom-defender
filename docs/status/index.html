@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>dom-defender status — CyberOS</title>
+<style>
+@import url("assets/status.css");
+* { box-sizing: border-box; }
+body { margin:0; background:var(--cs-color-surface-page); color:var(--cs-color-text-primary);
+  font-family:var(--cs-font-family-ui); font-size:15px; line-height:var(--cs-font-lineHeight-body); }
+.hub-header { background:var(--cs-color-brand-umber); color:var(--cs-color-text-inverse);
+  padding:var(--cs-space-6) var(--cs-space-8) var(--cs-space-5);
+  border-bottom:3px solid var(--cs-color-brand-ochre); }
+.hub-header h1 { margin:0 0 var(--cs-space-1); font-size:26px; letter-spacing:.2px;
+  line-height:var(--cs-font-lineHeight-heading); }
+.hub-sub { color:var(--cs-color-surface-raised); font-size:14px; opacity:.92; }
+.hub-meta { margin-top:var(--cs-space-2); font-size:12.5px; color:var(--cs-color-surface-raised); opacity:.75; }
+.hub-meta .code { font-family:var(--cs-font-family-mono); }
+main.hub-wrap { max-width:1180px; margin:0 auto; padding:var(--cs-space-6) var(--cs-space-6) var(--cs-space-16); }
+.card { background:var(--cs-color-surface-panel); border:1px solid var(--cs-color-border-default);
+  border-radius:12px; padding:var(--cs-space-4) var(--cs-space-5); margin-bottom:var(--cs-space-5); }
+.card h2 { margin:0 0 var(--cs-space-3); font-size:14px; text-transform:uppercase;
+  letter-spacing:.08em; color:var(--cs-color-text-muted); }
+.bar { height:12px; border-radius:var(--cs-radius-full); background:var(--cs-color-surface-raised);
+  overflow:hidden; display:flex; }
+.bar i { display:block; height:100%; }
+.seg-done { background:var(--cs-color-semantic-success); }
+.seg-active { background:var(--cs-color-brand-ochre); }
+.seg-hold { background:var(--cs-color-text-muted); }
+.counts { display:flex; gap:var(--cs-space-5); flex-wrap:wrap; margin-top:var(--cs-space-3); font-size:13.5px; }
+.counts b { font-size:17px; }
+.counts .muted { color:var(--cs-color-text-muted); }
+.callout { background:var(--cs-color-surface-raised); border:1px solid var(--cs-color-brand-ochre);
+  border-left:4px solid var(--cs-color-brand-ochre); border-radius:10px;
+  padding:var(--cs-space-4) var(--cs-space-5); margin-bottom:var(--cs-space-5); }
+.callout h3 { margin:0 0 var(--cs-space-2); font-size:14px; }
+.legend { display:flex; gap:var(--cs-space-4); flex-wrap:wrap; margin:0 0 var(--cs-space-4);
+  font-size:13px; color:var(--cs-color-text-muted); }
+.legend span { display:inline-flex; align-items:center; gap:6px; }
+.dot { width:11px; height:11px; border-radius:3px; display:inline-block; }
+.hub-tabs { display:flex; gap:var(--cs-space-2); border-bottom:2px solid var(--cs-color-border-default);
+  margin-bottom:var(--cs-space-5); }
+.hub-tab { padding:var(--cs-space-2) var(--cs-space-5); text-decoration:none;
+  color:var(--cs-color-text-accent); border:1px solid var(--cs-color-border-default);
+  border-bottom:none; border-radius:var(--cs-radius-md) var(--cs-radius-md) 0 0;
+  background:var(--cs-color-surface-raised); font-size:14px; font-weight:600; }
+.hub-tab[aria-selected="true"] { background:var(--cs-color-brand-umber);
+  color:var(--cs-color-text-inverse); border-color:var(--cs-color-brand-umber); }
+.hub-panel[hidden] { display:none; }
+.hub-foot { margin-top:var(--cs-space-12); text-align:center; font-size:12px;
+  color:var(--cs-color-text-muted); }
+</style>
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+<body data-template-id="status-hub@1">
+<header class="hub-header">
+  <h1>dom-defender status</h1>
+  <div class="hub-sub">Where dom-defender is and what is coming — generated from FR frontmatter, CHANGELOG, and VERSION</div>
+  <div class="hub-meta">VERSION <span class="code">unversioned</span> · built from <span class="code">52580df703c6</span> · 13 FRs · 1 releases</div>
+</header>
+<main class="hub-wrap">
+  <section class="card">
+<h2>Overall progress (13 feature requests · 6 modules)</h2>
+<div class="bar">
+  <i class="seg-done" style="width:0.0%" title="done 0"></i>
+  <i class="seg-active" style="width:38.5%" title="in flight 5"></i>
+  <i class="seg-hold" style="width:0.0%" title="on hold 0"></i>
+</div>
+<div class="counts">
+  <span><b>0</b> done <span class="muted">(0.0%)</span></span>
+  <span><b>5</b> in flight</span>
+  <span><b>8</b> draft</span>
+  <span><b>0</b> on hold</span>
+  <span><b>1</b> releases</span>
+  <span class="muted">latest v0.1.0 · 2026-07-12</span>
+</div></section>
+  
+<section class="callout">
+  <h3>Now shipping (5)</h3>
+  <div class="frs"><span class="chip active" data-status="implementing" title="FR-DD-COMM-001 — Public player profiles at /u/[username] [implementing]">DD-COMM-001</span> <span class="chip active" data-status="implementing" title="FR-DD-COMM-002 — Friends / follow and a following feed [implementing]">DD-COMM-002</span> <span class="chip active" data-status="implementing" title="FR-DD-EDU-001 — DOM Defender for teams: workshop / onboarding mode (CyberSkill funnel) [implementing]">DD-EDU-001</span> <span class="chip active" data-status="implementing" title="FR-DD-SOC-002 — Share cards v2: per-run Open Graph images for link unfurls [implementing]">DD-SOC-002</span> <span class="chip active" data-status="implementing" title="FR-DD-SOC-003 — Weekly tournament with its own seed and ranked board [implementing]">DD-SOC-003</span></div>
+</section>
+  
+<div class="legend">
+  <span><i class="dot seg-done"></i> done / closed</span>
+  <span><i class="dot seg-active"></i> in flight (ready_to_implement → testing)</span>
+  <span><i class="dot" style="background:var(--cs-color-border-default)"></i> draft</span>
+  <span><i class="dot seg-hold"></i> on hold</span>
+  <span class="muted">chips link to each FR's page · hover for title + status</span>
+</div>
+  <nav class="hub-tabs" role="tablist">
+    <a class="hub-tab" role="tab" href="#roadmap" data-tab="roadmap">Roadmap</a>
+    <a class="hub-tab" role="tab" href="#backlog" data-tab="backlog">Backlog</a>
+    <a class="hub-tab" role="tab" href="#changelog" data-tab="changelog">Changelog</a>
+  </nav>
+  <section class="hub-panel" id="roadmap" role="tabpanel">
+<div class="grid">
+<section class="epic" data-module="ai">
+  <span class="pct">0.0% done</span>
+  <h3><span class="id">ai</span> <span class="muted">· 2 FRs</span></h3>
+  <div class="minibar"><i class="seg-done" style="width:0.0%"></i><i class="seg-active" style="width:0.0%"></i><i class="seg-hold" style="width:0.0%"></i></div>
+  <div class="frs"><span class="chip todo" data-status="draft" title="FR-DD-AI-001 — Adaptive bug director - real-time difficulty matching (endless only) [draft]">DD-AI-001</span> <span class="chip todo" data-status="draft" title="FR-DD-AI-002 — AI replay coach: three concrete tips grounded in the run [draft]">DD-AI-002</span></div>
+</section>
+<section class="epic active" data-module="community">
+  <span class="pct">0.0% done</span>
+  <h3><span class="id">community</span> <span class="muted">· 3 FRs</span></h3>
+  <div class="minibar"><i class="seg-done" style="width:0.0%"></i><i class="seg-active" style="width:66.7%"></i><i class="seg-hold" style="width:0.0%"></i></div>
+  <div class="frs"><span class="chip active" data-status="implementing" title="FR-DD-COMM-001 — Public player profiles at /u/[username] [implementing]">DD-COMM-001</span> <span class="chip active" data-status="implementing" title="FR-DD-COMM-002 — Friends / follow and a following feed [implementing]">DD-COMM-002</span> <span class="chip todo" data-status="draft" title="FR-DD-COMM-004 — Reactions and comments on shared replays [draft]">DD-COMM-004</span></div>
+</section>
+<section class="epic active" data-module="edu">
+  <span class="pct">0.0% done</span>
+  <h3><span class="id">edu</span> <span class="muted">· 1 FRs</span></h3>
+  <div class="minibar"><i class="seg-done" style="width:0.0%"></i><i class="seg-active" style="width:100.0%"></i><i class="seg-hold" style="width:0.0%"></i></div>
+  <div class="frs"><span class="chip active" data-status="implementing" title="FR-DD-EDU-001 — DOM Defender for teams: workshop / onboarding mode (CyberSkill funnel) [implementing]">DD-EDU-001</span></div>
+</section>
+<section class="epic" data-module="monetization">
+  <span class="pct">0.0% done</span>
+  <h3><span class="id">monetization</span> <span class="muted">· 1 FRs</span></h3>
+  <div class="minibar"><i class="seg-done" style="width:0.0%"></i><i class="seg-active" style="width:0.0%"></i><i class="seg-hold" style="width:0.0%"></i></div>
+  <div class="frs"><span class="chip todo" data-status="draft" title="FR-DD-MON-001 — Stripe Pro checkout - turn on the existing Pro scaffold [draft]">DD-MON-001</span></div>
+</section>
+<section class="epic" data-module="reach">
+  <span class="pct">0.0% done</span>
+  <h3><span class="id">reach</span> <span class="muted">· 3 FRs</span></h3>
+  <div class="minibar"><i class="seg-done" style="width:0.0%"></i><i class="seg-active" style="width:0.0%"></i><i class="seg-hold" style="width:0.0%"></i></div>
+  <div class="frs"><span class="chip todo" data-status="draft" title="FR-DD-REACH-001 — Mobile and touch support [draft]">DD-REACH-001</span> <span class="chip todo" data-status="draft" title="FR-DD-REACH-002 — Internationalization: English and Vietnamese [draft]">DD-REACH-002</span> <span class="chip todo" data-status="draft" title="FR-DD-REACH-003 — Accessibility pass: keyboard play, reduced motion, contrast [draft]">DD-REACH-003</span></div>
+</section>
+<section class="epic active" data-module="social">
+  <span class="pct">0.0% done</span>
+  <h3><span class="id">social</span> <span class="muted">· 3 FRs</span></h3>
+  <div class="minibar"><i class="seg-done" style="width:0.0%"></i><i class="seg-active" style="width:66.7%"></i><i class="seg-hold" style="width:0.0%"></i></div>
+  <div class="frs"><span class="chip todo" data-status="draft" title="FR-DD-SOC-001 — Friend challenge links - beat-my-seed with an embedded target score [draft]">DD-SOC-001</span> <span class="chip active" data-status="implementing" title="FR-DD-SOC-002 — Share cards v2: per-run Open Graph images for link unfurls [implementing]">DD-SOC-002</span> <span class="chip active" data-status="implementing" title="FR-DD-SOC-003 — Weekly tournament with its own seed and ranked board [implementing]">DD-SOC-003</span></div>
+</section>
+
+</div>
+<h2 class="section-h">Module rollups</h2>
+<table><thead><tr><th>module</th><th>total</th><th>draft</th><th>ready_to_implement</th><th>implementing</th><th>ready_to_review</th><th>reviewing</th><th>ready_to_test</th><th>testing</th><th>done</th><th>on_hold</th><th>closed</th></tr></thead><tbody>
+<tr><td class="code">ai</td><td>2</td><td>2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="code">community</td><td>3</td><td>1</td><td></td><td>2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="code">edu</td><td>1</td><td></td><td></td><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="code">monetization</td><td>1</td><td>1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="code">reach</td><td>3</td><td>3</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td class="code">social</td><td>3</td><td>1</td><td></td><td>2</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</tbody></table></section>
+  <section class="hub-panel" id="backlog" role="tabpanel">
+<p class="hub-note">Generated view - FR frontmatter is the record of truth; agents write through BACKLOG.md.</p>
+<div class="bk-facets">
+  <select id="bk-module"><option value="">all modules</option><option value="ai">ai</option><option value="community">community</option><option value="edu">edu</option><option value="monetization">monetization</option><option value="reach">reach</option><option value="social">social</option></select>
+  <select id="bk-class"><option value="">all classes</option><option value="product">product</option><option value="improvement">improvement</option></select>
+  <select id="bk-priority"><option value="">all priorities</option><option value="MUST">MUST</option><option value="SHOULD">SHOULD</option></select>
+  <select id="bk-status"><option value="">all statuses</option><option value="draft">draft</option><option value="ready_to_implement">ready_to_implement</option><option value="implementing">implementing</option><option value="ready_to_review">ready_to_review</option><option value="reviewing">reviewing</option><option value="ready_to_test">ready_to_test</option><option value="testing">testing</option><option value="done">done</option><option value="on_hold">on_hold</option><option value="closed">closed</option></select>
+</div>
+<table id="bk-table"><thead><tr><th>id</th><th>title</th><th>module</th><th>class</th><th>priority</th><th>status</th></tr></thead><tbody>
+<tr data-module="ai" data-class="product" data-priority="MUST" data-status="draft"><td class="code">FR-DD-AI-001</td><td>Adaptive bug director - real-time difficulty matching (endless only)</td><td>ai</td><td>product</td><td>MUST</td><td><span class="chip todo" data-status="draft">draft</span></td></tr>
+<tr data-module="ai" data-class="product" data-priority="SHOULD" data-status="draft"><td class="code">FR-DD-AI-002</td><td>AI replay coach: three concrete tips grounded in the run</td><td>ai</td><td>product</td><td>SHOULD</td><td><span class="chip todo" data-status="draft">draft</span></td></tr>
+<tr data-module="community" data-class="product" data-priority="MUST" data-status="implementing"><td class="code">FR-DD-COMM-001</td><td>Public player profiles at /u/[username]</td><td>community</td><td>product</td><td>MUST</td><td><span class="chip active" data-status="implementing">implementing</span></td></tr>
+<tr data-module="community" data-class="product" data-priority="SHOULD" data-status="implementing"><td class="code">FR-DD-COMM-002</td><td>Friends / follow and a following feed</td><td>community</td><td>product</td><td>SHOULD</td><td><span class="chip active" data-status="implementing">implementing</span></td></tr>
+<tr data-module="community" data-class="product" data-priority="SHOULD" data-status="draft"><td class="code">FR-DD-COMM-004</td><td>Reactions and comments on shared replays</td><td>community</td><td>product</td><td>SHOULD</td><td><span class="chip todo" data-status="draft">draft</span></td></tr>
+<tr data-module="edu" data-class="product" data-priority="SHOULD" data-status="implementing"><td class="code">FR-DD-EDU-001</td><td>DOM Defender for teams: workshop / onboarding mode (CyberSkill funnel)</td><td>edu</td><td>product</td><td>SHOULD</td><td><span class="chip active" data-status="implementing">implementing</span></td></tr>
+<tr data-module="monetization" data-class="product" data-priority="MUST" data-status="draft"><td class="code">FR-DD-MON-001</td><td>Stripe Pro checkout - turn on the existing Pro scaffold</td><td>monetization</td><td>product</td><td>MUST</td><td><span class="chip todo" data-status="draft">draft</span></td></tr>
+<tr data-module="reach" data-class="product" data-priority="MUST" data-status="draft"><td class="code">FR-DD-REACH-001</td><td>Mobile and touch support</td><td>reach</td><td>product</td><td>MUST</td><td><span class="chip todo" data-status="draft">draft</span></td></tr>
+<tr data-module="reach" data-class="product" data-priority="SHOULD" data-status="draft"><td class="code">FR-DD-REACH-002</td><td>Internationalization: English and Vietnamese</td><td>reach</td><td>product</td><td>SHOULD</td><td><span class="chip todo" data-status="draft">draft</span></td></tr>
+<tr data-module="reach" data-class="product" data-priority="SHOULD" data-status="draft"><td class="code">FR-DD-REACH-003</td><td>Accessibility pass: keyboard play, reduced motion, contrast</td><td>reach</td><td>product</td><td>SHOULD</td><td><span class="chip todo" data-status="draft">draft</span></td></tr>
+<tr data-module="social" data-class="product" data-priority="MUST" data-status="draft"><td class="code">FR-DD-SOC-001</td><td>Friend challenge links - beat-my-seed with an embedded target score</td><td>social</td><td>product</td><td>MUST</td><td><span class="chip todo" data-status="draft">draft</span></td></tr>
+<tr data-module="social" data-class="product" data-priority="MUST" data-status="implementing"><td class="code">FR-DD-SOC-002</td><td>Share cards v2: per-run Open Graph images for link unfurls</td><td>social</td><td>product</td><td>MUST</td><td><span class="chip active" data-status="implementing">implementing</span></td></tr>
+<tr data-module="social" data-class="product" data-priority="SHOULD" data-status="implementing"><td class="code">FR-DD-SOC-003</td><td>Weekly tournament with its own seed and ranked board</td><td>social</td><td>product</td><td>SHOULD</td><td><span class="chip active" data-status="implementing">implementing</span></td></tr>
+</tbody></table>
+<script>
+(function () {
+  var sel = ['bk-module','bk-class','bk-priority','bk-status'].map(function (i) { return document.getElementById(i); });
+  var keys = ['module','class','priority','status'];
+  function apply() {
+    document.querySelectorAll('#bk-table tbody tr').forEach(function (tr) {
+      tr.hidden = !sel.every(function (s, i) { return !s.value || tr.dataset[keys[i]] === s.value; });
+    });
+  }
+  sel.forEach(function (s) { s.addEventListener('change', apply); });
+})();
+</script></section>
+  <section class="hub-panel" id="changelog" role="tabpanel"><div class="phases">
+<article class="phase now">
+  <span class="tick">★</span>
+  <div><b>v0.1.0 <span class="muted">· 2026-07-12</span></b>
+  <span>- CyberOS initialised: FR workflow vendored to .cyberos/, backlog at docs/feature-requests/BACKLOG.md, status page at .cyberos/status.html.</span></div>
+</article></div></section>
+  <footer class="hub-foot">dom-defender — generated at unversioned (52580df703c6). Markdown is the record of truth; this page only renders it.</footer>
+</main>
+<script>
+(function () {
+  var tabs = document.querySelectorAll('.hub-tab');
+  var panels = { roadmap: document.getElementById('roadmap'),
+                 backlog: document.getElementById('backlog'),
+                 changelog: document.getElementById('changelog') };
+  function show(name) {
+    if (!panels[name]) name = 'roadmap';
+    Object.keys(panels).forEach(function (k) { panels[k].hidden = (k !== name); });
+    tabs.forEach(function (t) { t.setAttribute('aria-selected', t.dataset.tab === name ? 'true' : 'false'); });
+  }
+  window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+  show(location.hash.slice(1) || 'roadmap');
+})();
+</script>
+<noscript><style>.hub-panel[hidden]{display:block !important}</style></noscript>
+</body>
+</html>

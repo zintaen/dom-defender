@@ -3,7 +3,7 @@ id: FR-DD-SOC-001
 title: "Friend challenge links - beat-my-seed with an embedded target score"
 lane: SOC
 priority: MUST
-status: proposed
+status: draft
 verify: T
 phase: P1
 milestone: P1 - growth slice 1

@@ -3,7 +3,7 @@ id: FR-DD-AI-001
 title: "Adaptive bug director - real-time difficulty matching (endless only)"
 lane: AI
 priority: MUST
-status: proposed
+status: draft
 verify: T
 phase: P1
 milestone: P1 - retention slice 1

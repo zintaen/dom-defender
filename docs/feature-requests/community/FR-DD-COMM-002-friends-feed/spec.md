@@ -3,7 +3,7 @@ id: FR-DD-COMM-002
 title: "Friends / follow and a following feed"
 lane: COMM
 priority: SHOULD
-status: scaffolded
+status: implementing
 verify: T
 phase: P1
 milestone: P1 - retention slice 2

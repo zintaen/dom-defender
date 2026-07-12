@@ -3,7 +3,7 @@ id: FR-DD-SOC-003
 title: "Weekly tournament with its own seed and ranked board"
 lane: SOC
 priority: SHOULD
-status: scaffolded
+status: implementing
 verify: T
 phase: P1
 milestone: P1 - growth slice 2

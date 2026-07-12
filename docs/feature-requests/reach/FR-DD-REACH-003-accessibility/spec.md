@@ -3,7 +3,7 @@ id: FR-DD-REACH-003
 title: "Accessibility pass: keyboard play, reduced motion, contrast"
 lane: REACH
 priority: SHOULD
-status: proposed
+status: draft
 verify: T
 phase: P1
 milestone: P1 - reach slice 2

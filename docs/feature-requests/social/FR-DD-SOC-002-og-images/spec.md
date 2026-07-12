@@ -3,7 +3,7 @@ id: FR-DD-SOC-002
 title: "Share cards v2: per-run Open Graph images for link unfurls"
 lane: SOC
 priority: MUST
-status: scaffolded
+status: implementing
 verify: T
 phase: P1
 milestone: P1 - growth slice 1

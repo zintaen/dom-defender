@@ -3,7 +3,7 @@ id: FR-DD-COMM-001
 title: "Public player profiles at /u/[username]"
 lane: COMM
 priority: MUST
-status: scaffolded
+status: implementing
 verify: T
 phase: P1
 milestone: P1 - retention slice 1

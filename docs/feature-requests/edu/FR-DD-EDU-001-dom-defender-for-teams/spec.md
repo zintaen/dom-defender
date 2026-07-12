@@ -3,7 +3,7 @@ id: FR-DD-EDU-001
 title: "DOM Defender for teams: workshop / onboarding mode (CyberSkill funnel)"
 lane: EDU
 priority: SHOULD
-status: scaffolded
+status: implementing
 verify: T
 phase: P1
 milestone: P1 - strategic slice

@@ -3,7 +3,7 @@ id: FR-DD-MON-001
 title: "Stripe Pro checkout - turn on the existing Pro scaffold"
 lane: MON
 priority: MUST
-status: proposed
+status: draft
 verify: T
 phase: P2
 milestone: P2 - monetization slice 1
