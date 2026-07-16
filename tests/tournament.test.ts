@@ -7,7 +7,7 @@ import {
   msUntilRollover,
 } from "@/lib/game/tournament";
 
-// FR-DD-SOC-003: a server-derived weekly seed that is identical for everyone in
+// TASK-DD-SOC-003: a server-derived weekly seed that is identical for everyone in
 // a week and rolls over deterministically.
 
 const monday = new Date("2026-06-22T09:00:00Z"); // Mon of ISO 2026-W26

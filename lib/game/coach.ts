@@ -1,4 +1,4 @@
-// AI replay coach (FR-DD-AI-002).
+// AI replay coach (TASK-DD-AI-002).
 //
 // Pure, deterministic analysis of a recorded run. Returns up to three tips, each
 // grounded in evidence from the replay (no generic advice). v1 is a heuristic

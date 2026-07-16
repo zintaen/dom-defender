@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { coachRun } from "@/lib/game/coach";
 import type { ReplayLog } from "@/lib/game/replay";
 
-// FR-DD-AI-002: every tip must be grounded in the run, deterministic, and capped at 3.
+// TASK-DD-AI-002: every tip must be grounded in the run, deterministic, and capped at 3.
 
 function makeReplay(over: Partial<ReplayLog> = {}): ReplayLog {
   return {

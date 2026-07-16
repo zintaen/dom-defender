@@ -1,4 +1,4 @@
-// FR-DD-COMM-002 follow graph helpers.
+// TASK-DD-COMM-002 follow graph helpers.
 //
 // The follow edge is a simple (follower -> following) pair. The database
 // enforces uniqueness and these helpers enforce the rules that are easy to get

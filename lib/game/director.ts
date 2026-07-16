@@ -1,4 +1,4 @@
-// Adaptive bug director (FR-DD-AI-001).
+// Adaptive bug director (TASK-DD-AI-001).
 //
 // Pure function: maps a PlayerSkillSnapshot to a bounded DirectorDecision.
 // USE IN ENDLESS MODE ONLY. Daily, tournament, and any seeded run must keep

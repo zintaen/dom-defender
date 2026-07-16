@@ -7,7 +7,7 @@ verify: T
 owner: Stephen Cheng
 created: 2026-06-24
 closes: []
-related: [FR-DD-REACH-003, FR-DD-REACH-001]
+related: [TASK-DD-REACH-003, TASK-DD-REACH-001]
 source:
   - components/game/styles.css (animation-heavy; some hover-only affordances)
   - lib/game/skins.ts (bug palettes - contrast varies by skin)
@@ -45,5 +45,5 @@ npm test -- a11y          # axe on key routes
 
 ## Notes
 
-This is the measurable gate that FR-DD-REACH-003 implements against. Pair the reduced-motion
-work with the touch work (FR-DD-REACH-001): both want large, clearly-focused targets.
+This is the measurable gate that TASK-DD-REACH-003 implements against. Pair the reduced-motion
+work with the touch work (TASK-DD-REACH-001): both want large, clearly-focused targets.

@@ -1,4 +1,4 @@
-// Teaching layer for DOM Defender for teams (FR-DD-EDU-001). Each bug family maps
+// Teaching layer for DOM Defender for teams (TASK-DD-EDU-001). Each bug family maps
 // to the real web concept it represents, so a team session doubles as a lesson and
 // the after-action summary can explain what each bug was really about.
 

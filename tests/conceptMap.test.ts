@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { explainBug, allConcepts, CONCEPT_MAP } from "@/lib/game/conceptMap";
 
-// FR-DD-EDU-001 teaching layer.
+// TASK-DD-EDU-001 teaching layer.
 
 describe("conceptMap", () => {
   it("explains each known bug family with a real web concept", () => {

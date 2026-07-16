@@ -1,4 +1,4 @@
-// Types for the adaptive bug director (FR-DD-AI-001). Kept separate so a future
+// Types for the adaptive bug director (TASK-DD-AI-001). Kept separate so a future
 // LLM- or model-backed director can return the same DirectorDecision shape.
 
 export interface PlayerSkillSnapshot {

@@ -7,9 +7,9 @@ verify: T
 owner: Stephen Cheng
 created: 2026-06-24
 closes: []
-related: [FR-DD-COMM-001, FR-DD-COMM-004, NFR-DOM-003]
+related: [TASK-DD-COMM-001, TASK-DD-COMM-004, NFR-DOM-003]
 source:
-  - FR-DD-COMM-001 (display name), FR-DD-COMM-004 (comments) introduce user text
+  - TASK-DD-COMM-001 (display name), TASK-DD-COMM-004 (comments) introduce user text
   - app/replay/[id] (where comments render)
 ---
 
@@ -43,6 +43,6 @@ npm test -- moderation sanitize
 
 ## Notes
 
-This NFR blocks FR-DD-COMM-004 and gates the display-name field in FR-DD-COMM-001. Keep the
+This NFR blocks TASK-DD-COMM-004 and gates the display-name field in TASK-DD-COMM-001. Keep the
 denylist data-driven so it can be tuned without a deploy. A hosted moderation API can slot in
 later behind the same interface; the denylist is enough for launch.

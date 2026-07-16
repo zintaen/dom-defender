@@ -234,7 +234,7 @@ function SubmitToast({
   const share = result.shareUrl;
   const { score, wave, bugsFixed, bossesDefeated, maxCombo, durationSec } = result.runSummary;
 
-  // Friend challenge link (FR-DD-SOC-001): only when the run had a seed, and
+  // Friend challenge link (TASK-DD-SOC-001): only when the run had a seed, and
   // never for tournament runs - a challenge link encodes the seed, and handing
   // out the live week seed would let people pre-practice the tournament.
   const [challengeCopied, setChallengeCopied] = useState(false);

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 
-// DOM Defender for teams (FR-DD-EDU-001): create a room or join one by code.
+// DOM Defender for teams (TASK-DD-EDU-001): create a room or join one by code.
 export default function TeamsLanding() {
   const { data: session, status } = useSession();
   const router = useRouter();

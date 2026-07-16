@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { parseOgParams, buildOgQuery } from "@/lib/og/ogParams";
 
-// FR-DD-SOC-002: the OG endpoint must render only sanitized display values and
+// TASK-DD-SOC-002: the OG endpoint must render only sanitized display values and
 // never leak PII into the image or its URL.
 
 describe("parseOgParams", () => {

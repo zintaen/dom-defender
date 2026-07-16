@@ -35,10 +35,10 @@ site. That is the line that makes developers click and share.
 2. Reddit: r/webdev (primary), then r/javascript and r/incremental_games. Reddit punishes ads
    and rewards makers. Post the making-of, not a pitch. Different day from HN.
 3. Product Hunt. Good for a durable listing and a second traffic wave. Line up a few people
-   who will genuinely try it on launch morning. Ship the per-run OG image (FR-DD-SOC-002)
+   who will genuinely try it on launch morning. Ship the per-run OG image (TASK-DD-SOC-002)
    first so shared links unfurl with a picture.
 4. Developer X / Twitter. A launch thread plus short clips of satisfying bug-swatting. This is
-   where the challenge-link loop (FR-DD-SOC-001) compounds.
+   where the challenge-link loop (TASK-DD-SOC-001) compounds.
 5. Short-form video (X, TikTok, YouTube Shorts). A 15 to 30 second clip of the BYO mode
    wrecking a famous site's homepage with bugs is the single most shareable asset. Storyboard
    is in the assets file.
@@ -62,7 +62,7 @@ Launch week:
   so the thread sees momentum.
 
 Post-launch (ongoing):
-- Weekly tournament (FR-DD-SOC-003) gives a recurring reason to post and return.
+- Weekly tournament (TASK-DD-SOC-003) gives a recurring reason to post and return.
 - Turn the best community runs and challenge links into content.
 - Only now consider a small paid test (see below).
 
@@ -86,7 +86,7 @@ at that point, not now.
 ## The CyberSkill connection (optional but high-leverage)
 
 The game can quietly funnel to the consultancy without feeling like an ad: a small "made by
-CyberSkill" credit, and the teams / workshop mode (FR-DD-EDU-001) as a real product - run
+CyberSkill" credit, and the teams / workshop mode (TASK-DD-EDU-001) as a real product - run
 DOM Defender as a team event or a hiring-screen warmup, with a shared leaderboard. That turns
 a fun launch into a repeatable top-of-funnel asset for CyberSkill, which is the point of doing
 all this rather than just shipping a game.

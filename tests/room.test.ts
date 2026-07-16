@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { makeRoomCode, isValidRoomCode, roomSeed, rankMembers } from "@/lib/game/room";
 
-// FR-DD-EDU-001 room logic: shareable code, deterministic seed, fair ranking.
+// TASK-DD-EDU-001 room logic: shareable code, deterministic seed, fair ranking.
 
 describe("room code", () => {
   it("generates a valid code of the requested length", () => {

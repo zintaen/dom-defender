@@ -7,7 +7,7 @@ import { reportError } from "@/lib/observability";
 export const dynamic = "force-dynamic";
 
 // GET /api/tournament -> current week key, server-derived seed, countdown, and
-// the ranked board (best score per user) for this week (FR-DD-SOC-003).
+// the ranked board (best score per user) for this week (TASK-DD-SOC-003).
 export async function GET(req: Request) {
   try {
     const limit = Math.min(50, Math.max(5, Number(new URL(req.url).searchParams.get("limit")) || 25));

@@ -26,7 +26,7 @@ export default async function PlayPage({
     }
   }
 
-  // Free endless (no seed) stays random so the adaptive director (FR-DD-AI-001)
+  // Free endless (no seed) stays random so the adaptive director (TASK-DD-AI-001)
   // can vary difficulty per player. Seeded runs (?seed= / ?challenge=) are
   // deterministic and the director stays off, so a challenge remains a fair
   // same-bugs comparison. So `seed` is left undefined for free endless.

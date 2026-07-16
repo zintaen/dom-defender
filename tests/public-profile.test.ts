@@ -6,7 +6,7 @@ import {
   isValidUsernameParam,
 } from "@/lib/profile/publicProfile";
 
-// FR-DD-COMM-001: the public projection must never leak sensitive fields, and
+// TASK-DD-COMM-001: the public projection must never leak sensitive fields, and
 // privacy is opt-out.
 
 describe("projectPublicProfile", () => {

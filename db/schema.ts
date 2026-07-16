@@ -28,7 +28,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email"),
   passwordHash: text("password_hash").notNull(),
-  // Public profile (FR-DD-COMM-001). Opt-out: public unless explicitly false.
+  // Public profile (TASK-DD-COMM-001). Opt-out: public unless explicitly false.
   profilePublic: boolean("profile_public").notNull().default(true),
   displayName: text("display_name"),
   selectedSkin: text("selected_skin").notNull().default("default"),
@@ -127,7 +127,7 @@ export const proWaitlist = pgTable("pro_waitlist", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
-// ---- rooms (FR-DD-EDU-001 teams) ---------------------------------------
+// ---- rooms (TASK-DD-EDU-001 teams) ---------------------------------------
 export interface RoomMember {
   userId: string;
   username: string;
@@ -147,7 +147,7 @@ export const rooms = pgTable("rooms", {
   closesAt: timestamp("closes_at", { withTimezone: true }).notNull(),
 });
 
-// ---- follows (FR-DD-COMM-002) ------------------------------------------
+// ---- follows (TASK-DD-COMM-002) ------------------------------------------
 export const follows = pgTable(
   "follows",
   {

@@ -2,7 +2,7 @@
 
 Paste-ready copy for each channel. Swap `<URL>` for the live domain before posting. Keep it
 honest: do not claim numbers you do not have, and do not launch before the P0 gate
-(`docs/ROADMAP.md`). All of this assumes the per-run OG image (FR-DD-SOC-002) is live so links
+(`docs/ROADMAP.md`). All of this assumes the per-run OG image (TASK-DD-SOC-002) is live so links
 unfurl with a picture.
 
 ## Taglines (pick one, use everywhere)
@@ -89,7 +89,7 @@ will write up how that works if people want it.
 5/ Built solo with Next.js and MongoDB. Tell me your high score and what I should add. Challenge
 a friend with your seed and see who patches faster.
 
-## In-product share + challenge copy (FR-DD-SOC-001 / SOC-002)
+## In-product share + challenge copy (TASK-DD-SOC-001 / SOC-002)
 
 Share card auto text:
 I survived to wave {wave} and scored {score} in DOM Defender. Think you can patch faster?
@@ -119,7 +119,7 @@ Caption: A survival game where the website is the game. Paste any URL and try it
   is what I found." (links the integrity work to a credible launch - developers respect this).
 - "How I stopped people faking my leaderboard" - the replay-validation write-up (after
   NFR-DOM-001 ships).
-- Short clips of the adaptive AI director (FR-DD-AI-001) ramping difficulty to the player.
+- Short clips of the adaptive AI director (TASK-DD-AI-001) ramping difficulty to the player.
 
 ## Reminders
 

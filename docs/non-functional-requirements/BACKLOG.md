@@ -12,10 +12,10 @@ each NFR closes (where applicable) is in the last column.
 | NFR-DOM-004 | Security | spec written | Response security headers | L1-T4 |
 | NFR-DOM-005 | Quality | spec written | CI gate: lint + typecheck + test + build green | L1-T5, L1-T10 |
 | NFR-DOM-006 | Performance | spec written | Bundle + route size budget enforced in CI | L1-T12 |
-| NFR-DOM-007 | Safety | spec written | Moderation for user text (profiles, comments) | (FR-DD-COMM-004) |
-| NFR-DOM-008 | Accessibility | spec written | WCAG-aligned: keyboard play, reduced-motion, contrast | (FR-DD-REACH-003) |
+| NFR-DOM-007 | Safety | spec written | Moderation for user text (profiles, comments) | (TASK-DD-COMM-004) |
+| NFR-DOM-008 | Accessibility | spec written | WCAG-aligned: keyboard play, reduced-motion, contrast | (TASK-DD-REACH-003) |
 
-Rule: a feature FR that depends on an NFR cannot ship until that NFR is done. The dependency
-edges are in `docs/feature-requests/BACKLOG.md`. Note the shared building block: NFR-DOM-003
+Rule: a feature task that depends on an NFR cannot ship until that NFR is done. The dependency
+edges are in `docs/tasks/BACKLOG.md`. Note the shared building block: NFR-DOM-003
 defines the rate-limit primitive that NFR-DOM-002, NFR-DOM-007, and the per-user score limit
 (L1-T7) all reuse - build it once.

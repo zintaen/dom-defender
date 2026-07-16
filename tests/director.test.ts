@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { decideDirector, estimateSkill, MIN_INTERVAL_MULT, MAX_INTERVAL_MULT } from "@/lib/game/director";
 import type { PlayerSkillSnapshot } from "@/lib/game/director.types";
 
-// FR-DD-AI-001: endless-only adaptive difficulty. These pin the direction of
+// TASK-DD-AI-001: endless-only adaptive difficulty. These pin the direction of
 // adaptation and the hard bounds (the game can never become unwinnable/trivial).
 
 const strong: PlayerSkillSnapshot = {

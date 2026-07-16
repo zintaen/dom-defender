@@ -76,7 +76,7 @@ export async function POST(req: Request) {
 
     // Competitive buckets are derived server-side so a client cannot submit
     // under a forged seed. Daily uses the date key (L1-T8); the weekly tournament
-    // uses the ISO-week key (FR-DD-SOC-003). Endless keeps its client seed.
+    // uses the ISO-week key (TASK-DD-SOC-003). Endless keeps its client seed.
     let dailyKey: string | undefined;
     let seed: number | undefined;
     if (mode === "daily") {

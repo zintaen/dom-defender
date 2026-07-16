@@ -104,7 +104,7 @@ export default function ReplayPlayer({ replay }: { replay: ReplayPayload }) {
   const scorePath = useMemo(() => pathFrom(replay.snapshots, (s) => [xScale(s.t), yScoreScale(s.score)]), [replay.snapshots, xScale, yScoreScale]);
   const crashPath = useMemo(() => pathFrom(replay.snapshots, (s) => [xScale(s.t), yCrashScale(s.crash)]), [replay.snapshots, xScale, yCrashScale]);
 
-  // AI coach tips for this run (FR-DD-AI-002), derived deterministically from the replay.
+  // AI coach tips for this run (TASK-DD-AI-002), derived deterministically from the replay.
   const coachTips = useMemo(
     () =>
       coachRun({
@@ -192,7 +192,7 @@ export default function ReplayPlayer({ replay }: { replay: ReplayPayload }) {
             <Stat label="Best Combo" value={`x${replay.maxCombo}`} color="text-pink-300" />
           </div>
 
-          {/* AI coach (FR-DD-AI-002) */}
+          {/* AI coach (TASK-DD-AI-002) */}
           {coachTips.length > 0 && (
             <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-4 mb-4">
               <div className="text-xs uppercase tracking-widest text-cyan-300 mb-2">Coach</div>

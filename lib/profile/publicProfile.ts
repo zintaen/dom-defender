@@ -1,4 +1,4 @@
-// FR-DD-COMM-001 public profile projection.
+// TASK-DD-COMM-001 public profile projection.
 //
 // The public profile endpoint must expose only safe, display-facing fields. This
 // module is the projection boundary: it builds the public object field by field,

@@ -1,4 +1,4 @@
-// Friend challenge links (FR-DD-SOC-001).
+// Friend challenge links (TASK-DD-SOC-001).
 //
 // A challenge token encodes the run's seed, the challenger's score, their name,
 // and the mode, so a friend can replay the identical seeded bug pattern and see

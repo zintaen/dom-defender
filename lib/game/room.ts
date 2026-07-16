@@ -1,4 +1,4 @@
-// Team-room logic for DOM Defender for teams (FR-DD-EDU-001).
+// Team-room logic for DOM Defender for teams (TASK-DD-EDU-001).
 //
 // Pure helpers: a shareable room code, a deterministic seed derived from that code
 // (so every member plays the identical bug sequence, like the daily), and member

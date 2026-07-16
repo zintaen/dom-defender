@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import PlayShell from "@/components/PlayShell";
 
-// FR-DD-SOC-003 weekly tournament: one server-seeded run for the whole week,
+// TASK-DD-SOC-003 weekly tournament: one server-seeded run for the whole week,
 // a live ranked board, and a countdown to rollover. Entry drops into a seeded
 // PlayShell run submitted as mode "tournament".
 

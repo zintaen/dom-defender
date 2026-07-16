@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { canFollow, sortFeedNewestFirst, dedupeIds } from "@/lib/social/follow";
 
-// FR-DD-COMM-002: follow-edge invariants and feed ordering.
+// TASK-DD-COMM-002: follow-edge invariants and feed ordering.
 
 describe("canFollow", () => {
   it("allows following a different user", () => {

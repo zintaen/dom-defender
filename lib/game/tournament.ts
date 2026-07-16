@@ -1,4 +1,4 @@
-// FR-DD-SOC-003 weekly tournament: one shared seed per ISO week, derived
+// TASK-DD-SOC-003 weekly tournament: one shared seed per ISO week, derived
 // server-side from the week key so no one can pre-practice a forged seed.
 // Reuses the daily-seed hash for a stable single-seed PRNG input.
 import { seedFromDateKey } from "./dailySeed";

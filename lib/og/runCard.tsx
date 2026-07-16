@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import type { OgParams } from "./ogParams";
 
-// The run-card layout for the 1200x630 Open Graph image (FR-DD-SOC-002).
+// The run-card layout for the 1200x630 Open Graph image (TASK-DD-SOC-002).
 // Built for satori (next/og): every multi-child box sets display:flex, all
 // styling is inline, and colors are solid so the dark CTA text stays readable.
 // This file imports nothing from next/og so it can be reasoned about and reused.

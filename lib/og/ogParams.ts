@@ -1,4 +1,4 @@
-// FR-DD-SOC-002 Open Graph image inputs.
+// TASK-DD-SOC-002 Open Graph image inputs.
 //
 // The OG endpoint draws a run card purely from display values in the query. This
 // module is the trust boundary: it accepts only the known display keys, clamps

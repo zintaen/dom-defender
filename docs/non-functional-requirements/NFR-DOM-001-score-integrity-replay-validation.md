@@ -7,7 +7,7 @@ verify: T
 owner: Stephen Cheng
 created: 2026-06-24
 closes: [L1-T1]
-related: [NFR-DOM-003, FR-DD-SOC-001, FR-DD-SOC-003, FR-DD-MON-001]
+related: [NFR-DOM-003, TASK-DD-SOC-001, TASK-DD-SOC-003, TASK-DD-MON-001]
 source:
   - app/api/scores/route.ts (today: only a coarse sanity check)
   - lib/game/replay.ts (a replay - event log + snapshots - is already recorded per run)
@@ -49,7 +49,7 @@ npm test -- score-integrity      # bounds + reconstruction cases
 
 ## Notes
 
-v1 (bounds check + replay required) is enough to unblock launch and the social FRs. v2 (full
+v1 (bounds check + replay required) is enough to unblock launch and the social tasks. v2 (full
 re-simulation) is the strong form for daily and tournaments and can land in a later loop.
 The replay system already exists, so most of the cost is the validator and wiring, not new
 capture. Pair with a per-user submission rate limit (L1-T7).

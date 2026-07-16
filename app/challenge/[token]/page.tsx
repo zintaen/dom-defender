@@ -13,7 +13,7 @@ async function ogBase(): Promise<string> {
   return host ? `${proto}://${host}` : "";
 }
 
-// Friend challenge landing (FR-DD-SOC-001). Shows the target to beat, then sends
+// Friend challenge landing (TASK-DD-SOC-001). Shows the target to beat, then sends
 // the player into /play with the same seed. The embedded score is display only;
 // the score they post is validated server-side (NFR-DOM-001).
 export default async function ChallengePage({

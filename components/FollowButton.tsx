@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 
-// FR-DD-COMM-002: follower/following counts plus a follow toggle, loaded client
+// TASK-DD-COMM-002: follower/following counts plus a follow toggle, loaded client
 // side from /api/follow so the profile page itself stays a cacheable server
 // component.
 interface FollowState {

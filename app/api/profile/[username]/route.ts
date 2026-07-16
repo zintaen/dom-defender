@@ -11,7 +11,7 @@ import { reportError } from "@/lib/observability";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/profile/[username] -> public projection (FR-DD-COMM-001). Never
+// GET /api/profile/[username] -> public projection (TASK-DD-COMM-001). Never
 // returns email, passwordHash, or internal ids; honors the opt-out flag.
 export async function GET(_req: Request, { params }: { params: Promise<{ username: string }> }) {
   try {

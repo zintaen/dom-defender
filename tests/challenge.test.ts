@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { encodeChallenge, decodeChallenge, type ChallengePayload } from "@/lib/game/challenge";
 
-// FR-DD-SOC-001: the challenge token must round-trip and must fail closed on
+// TASK-DD-SOC-001: the challenge token must round-trip and must fail closed on
 // tampering. The embedded score is display-only; ranking still goes through the
 // validated /api/scores path.
 
